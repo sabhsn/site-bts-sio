@@ -163,10 +163,9 @@ nav{border-bottom:1px solid var(--br);position:sticky;top:0;z-index:100;backgrou
     </div>
     <div id="qcon"></div>
     <div class="ai-section" id="aiSection" style="display:none">
-      <h3>Serie terminee !</h3>
-      <p>Tu as repondu a toutes les questions. L'IA va en generer de nouvelles, differentes et adaptees a ton option.</p>
-      <button class="aibtn" id="aibtn" onclick="generateAIQuestions()">Generer de nouvelles questions</button>
-      <div class="ai-loading" id="aiload"><div class="spinner"></div>L'IA genere tes questions...</div>
+      <h3>Serie terminee ! 🎉</h3>
+      <p>Tu as repondu a toutes les questions. Lance une nouvelle serie avec d autres questions piochees aleatoirement.</p>
+      <button class="aibtn" id="aibtn" onclick="generateAIQuestions()">Nouvelle serie de questions →</button>
     </div>
   </div>
 </div>
@@ -204,24 +203,104 @@ var fiches=[
 {id:18,opt:'Commun',cat:'Reseaux',title:'Adressage IP et Sous-reseaux',desc:'Calcul CIDR, adresses privees/publiques, NAT et introduction IPv6.',diff:2,time:'20 min',content:'<h4>Plages d adresses privees (RFC 1918)</h4><div class="codeblock"><pre>Classe A : 10.0.0.0 à 10.255.255.255 (/8)\nClasse B : 172.16.0.0 à 172.31.255.255 (/12)\nClasse C : 192.168.0.0 à 192.168.255.255 (/16)\n\nCes adresses ne sont pas routables sur Internet.\nNAT traduit les IPs privees en adresse publique.\n\nAdresses speciales :\n127.0.0.1   = localhost (loopback)\n0.0.0.0/0   = route par defaut</pre></div><h4>Calcul de sous-reseaux</h4><div class="codeblock"><pre>Reseau : 192.168.10.0/26\n\n/26 = masque 255.255.255.192 = 64 adresses\nHotes utilisables = 64 - 2 = 62\n\nSous-reseaux /26 dans un /24 :\nSR1 : 192.168.10.0   → .63   (hotes .1 à .62)\nSR2 : 192.168.10.64  → .127  (hotes .65 à .126)\nSR3 : 192.168.10.128 → .191\nSR4 : 192.168.10.192 → .255\n\nTableau :\n/24=254  /25=126  /26=62  /27=30  /28=14  /29=6  /30=2</pre></div>'},
 ];
 
-var initQ=[
-{q:'Quelle couche OSI gere le routage des paquets entre reseaux ?',ch:['Couche 2 - Liaison','Couche 3 - Reseau','Couche 4 - Transport','Couche 7 - Application'],cor:1,opt:'SISR',sub:'Reseaux',expl:'La couche 3 (Reseau) gere le routage via le protocole IP. Elle determine le meilleur chemin pour acheminer les paquets d un reseau a un autre grace aux routeurs.'},
-{q:'TCP utilise quel mecanisme pour garantir la livraison des donnees ?',ch:['Le protocole ARP','Le TTL des paquets','L accuse de reception (ACK) et le handshake 3-way','L adresse MAC de destination'],cor:2,opt:'SISR',sub:'Reseaux',expl:'TCP etablit une connexion via SYN-SYN/ACK-ACK. Chaque segment doit etre acquitte (ACK). Sans ACK dans le delai, le segment est retransmis automatiquement.'},
-{q:'Combien d hotes utilisables dans un reseau /26 ?',ch:['64','62','30','126'],cor:1,opt:'SISR',sub:'Reseaux',expl:'/26 = 64 adresses totales. On soustrait l adresse reseau et le broadcast → 62 hotes. Formule : 2^(32-prefixe) - 2.'},
-{q:'Qu est-ce qu un port trunk en VLAN ?',ch:['Un port d admin securise','Un port du VLAN de management','Un port qui transporte plusieurs VLANs (802.1Q)','Un port bloque par securite'],cor:2,opt:'SISR',sub:'Reseaux',expl:'Un port trunk (802.1Q) transporte plusieurs VLANs sur un seul cable. Il ajoute un tag de 4 octets dans la trame Ethernet pour identifier le VLAN.'},
-{q:'Quelle commande systemd demarre un service au boot ?',ch:['systemctl start nginx','systemctl restart nginx','systemctl enable nginx','systemctl boot nginx'],cor:2,opt:'SISR',sub:'Systeme',expl:'systemctl enable cree un lien symbolique pour demarrer le service a chaque boot. start ne demarre que pour la session courante.'},
-{q:'chmod 644 applique quelles permissions ?',ch:['rwxr--r--','rw-r--r--','rwxrwxr--','r--r--r--'],cor:1,opt:'SISR',sub:'Systeme',expl:'6=rw- (proprietaire), 4=r-- (groupe), 4=r-- (autres). Typique pour les fichiers de configuration.'},
-{q:'Difference principale entre IDS et IPS ?',ch:['L IDS est plus recent','L IDS detecte sans bloquer ; l IPS detecte ET bloque','L IPS analyse le reseau, l IDS protege les hotes','L IDS est logiciel, l IPS est materiel'],cor:1,opt:'SISR',sub:'Cybersecurite',expl:'IDS (passif) : analyse et genere des alertes. IPS (actif) : positionne dans le flux reseau pour bloquer les menaces en temps reel.'},
-{q:'En TLS, pourquoi combiner asymetrique et symetrique ?',ch:['Pour des raisons legales','Asymetrique pour echange de cle (securise), symetrique pour donnees (rapide)','Symetrique pour echange, asymetrique pour donnees','Pour fonctionner sans certificat'],cor:1,opt:'SISR',sub:'Cybersecurite',expl:'L asymetrique resout l echange de cle securise mais est lent. AES (symetrique) chiffre les donnees tres rapidement une fois la cle de session echangee.'},
-{q:'Que retourne toujours une fonction async en JavaScript ?',ch:['La valeur directement','Une Promise','Un generateur','undefined'],cor:1,opt:'SLAM',sub:'JavaScript',expl:'Toute fonction async retourne une Promise. async function f() { return 42; } retourne Promise.resolve(42).'},
-{q:'Quelle methode PDO protege contre les injections SQL ?',ch:['query() avec echappement','escape()','prepare() avec execute([$param])','sanitize()'],cor:2,opt:'SLAM',sub:'PHP',expl:'Les requetes preparees separent le code SQL des donnees. PDO gere l echappement automatiquement, rendant les injections impossibles.'},
-{q:'Que fait super().__init__() en Python POO ?',ch:['Appelle le destructeur parent','Appelle le constructeur parent pour initialiser ses attributs','Cree une instance du parent','Remplace le constructeur parent'],cor:1,opt:'SLAM',sub:'POO',expl:'super().__init__() appelle le constructeur de la classe parente. Essentiel en heritage pour initialiser les attributs definis dans la classe mere.'},
-{q:'Difference entre PUT et PATCH en REST ?',ch:['Aucune difference','PUT cree, PATCH modifie','PUT remplace la ressource entiere, PATCH modifie partiellement','PATCH est plus securise'],cor:2,opt:'SLAM',sub:'API REST',expl:'PUT remplace la ressource complete (tous les champs). PATCH applique une modification partielle (seulement les champs envoyes). PATCH est plus economique.'},
-{q:'Difference entre WHERE et HAVING en SQL ?',ch:['Ce sont des synonymes','WHERE filtre avant GROUP BY ; HAVING filtre les groupes apres agregation','HAVING filtre les colonnes, WHERE filtre les lignes','WHERE avec JOIN, HAVING sans JOIN'],cor:1,opt:'Commun',sub:'SQL',expl:'WHERE filtre les lignes AVANT le GROUP BY (pas de fonctions d agregation). HAVING filtre les groupes APRES agregation (COUNT, SUM etc.).'},
-{q:'Une relation (0,n)-(0,n) en Merise devient quoi dans le MLD ?',ch:['Une cle etrangere dans l une des tables','Une table intermediaire avec 2 cles etrangeres','Un attribut calcule','Elle disparait'],cor:1,opt:'Commun',sub:'BDD',expl:'Une relation n,m ne peut pas se representer avec des FK directes. On cree une table intermediaire (table de jonction) avec les cles primaires des deux entites.'},
-{q:'Dans Scrum, qui priorise le Product Backlog ?',ch:['Le Scrum Master','L equipe de dev','Le Product Owner','Le manager'],cor:2,opt:'Commun',sub:'Gestion de projet',expl:'Le Product Owner represente les parties prenantes. Il maximise la valeur du produit en priorisant les User Stories selon leur valeur metier.'},
-{q:'La regle 3-2-1 des sauvegardes signifie ?',ch:['3 serveurs, 2 sites, 1 cloud','3 copies, 2 supports differents, 1 hors site','3 sauvegardes/jour, 2/semaine, 1/mois','3 formats, 2 outils, 1 responsable'],cor:1,opt:'Commun',sub:'Cybersecurite',expl:'3-2-1 : 3 copies (original + 2 backups), sur 2 types de supports differents, dont 1 copie hors site pour se proteger des incendies et catastrophes.'},
+var BANQUE=[
+/* SISR - Reseaux */
+{q:'Quelle couche OSI gere le routage des paquets entre reseaux ?',ch:['Couche 2 - Liaison','Couche 3 - Reseau','Couche 4 - Transport','Couche 7 - Application'],cor:1,opt:'SISR',sub:'Reseaux',expl:'La couche 3 (Reseau) gere le routage via IP. Le routeur opere a cette couche.'},
+{q:'TCP utilise quel mecanisme pour garantir la livraison ?',ch:['ARP','TTL','Accuse de reception ACK et handshake 3-way','Adresse MAC'],cor:2,opt:'SISR',sub:'Reseaux',expl:'TCP etablit une connexion SYN-SYN/ACK-ACK puis attend un ACK pour chaque segment envoye.'},
+{q:'Combien d hotes utilisables dans un reseau /26 ?',ch:['64','62','30','126'],cor:1,opt:'SISR',sub:'Reseaux',expl:'/26 = 64 adresses. Moins reseau et broadcast = 62 hotes.'},
+{q:'Qu est-ce qu un port trunk 802.1Q ?',ch:['Port d admin','Port d un seul VLAN','Port qui transporte plusieurs VLANs simultanement','Port bloque'],cor:2,opt:'SISR',sub:'Reseaux',expl:'Un trunk transporte plusieurs VLANs en ajoutant un tag 802.1Q de 4 octets dans la trame.'},
+{q:'Quel protocole resout un nom de domaine en adresse IP ?',ch:['DHCP','DNS','ARP','NAT'],cor:1,opt:'SISR',sub:'Reseaux',expl:'DNS (Domain Name System) traduit les noms de domaine en adresses IP.'},
+{q:'Quel est le processus DORA du protocole DHCP ?',ch:['Download Offer Request Ack','Discover Offer Request Acknowledge','Define Obtain Request Assign','Discover Open Route Allow'],cor:1,opt:'SISR',sub:'Reseaux',expl:'DORA : Discover (client cherche serveur), Offer (serveur propose IP), Request (client accepte), Acknowledge (serveur confirme).'},
+{q:'Combien d hotes peut contenir un /27 ?',ch:['62','30','14','126'],cor:1,opt:'SISR',sub:'Reseaux',expl:'/27 = 32 adresses totales - 2 (reseau + broadcast) = 30 hotes.'},
+{q:'Quel protocole de routage dynamique utilise l etat des liens ?',ch:['RIP','BGP','OSPF','STP'],cor:2,opt:'SISR',sub:'Reseaux',expl:'OSPF (Open Shortest Path First) utilise l algorithme Dijkstra et l etat des liens pour calculer les meilleures routes.'},
+{q:'Sur quel port SSH ecoute par defaut ?',ch:['21','22','23','25'],cor:1,opt:'SISR',sub:'Reseaux',expl:'SSH ecoute sur le port 22 par defaut. Telnet utilise le port 23, FTP le 21, SMTP le 25.'},
+{q:'Qu est-ce que NAT ?',ch:['Un protocole de routage','Une traduction d adresse IP privee en publique','Un type de VLAN','Un algorithme de chiffrement'],cor:1,opt:'SISR',sub:'Reseaux',expl:'NAT (Network Address Translation) traduit les adresses IP privees en adresse publique pour permettre l acces Internet.'},
+{q:'Quel enregistrement DNS pointe un nom vers une adresse IPv4 ?',ch:['CNAME','MX','A','NS'],cor:2,opt:'SISR',sub:'Reseaux',expl:'L enregistrement A (Address) associe un nom de domaine a une adresse IPv4. AAAA est utilise pour IPv6.'},
+{q:'Quelle plage est reservee aux adresses privees de classe C ?',ch:['10.0.0.0/8','172.16.0.0/12','192.168.0.0/16','169.254.0.0/16'],cor:2,opt:'SISR',sub:'Reseaux',expl:'192.168.0.0/16 est la plage privee de classe C. 10.0.0.0/8 est classe A, 172.16.0.0/12 est classe B.'},
+/* SISR - Systeme */
+{q:'Quelle commande systemd demarre un service au boot ?',ch:['systemctl start','systemctl restart','systemctl enable','systemctl boot'],cor:2,opt:'SISR',sub:'Systeme',expl:'systemctl enable cree un lien symbolique pour demarrer automatiquement le service a chaque demarrage du systeme.'},
+{q:'chmod 644 donne quelles permissions ?',ch:['rwxr--r--','rw-r--r--','rwxrwxr--','r--r--r--'],cor:1,opt:'SISR',sub:'Systeme',expl:'6=rw- (proprietaire), 4=r-- (groupe), 4=r-- (autres). Permission classique pour les fichiers de config.'},
+{q:'Quelle commande affiche les logs d un service en temps reel ?',ch:['cat /var/log','systemctl log','journalctl -u nginx -f','tail service nginx'],cor:2,opt:'SISR',sub:'Systeme',expl:'journalctl -u nom_service -f affiche les logs systemd en temps reel (-f = follow).'},
+{q:'Un hyperviseur de Type 1 s execute ou ?',ch:['Sur Windows','Directement sur le materiel physique','Dans un conteneur','Sur une VM existante'],cor:1,opt:'SISR',sub:'Systeme',expl:'Un hyperviseur Type 1 (bare-metal) s execute directement sur le materiel sans OS hote. Ex : VMware ESXi, Hyper-V, KVM.'},
+{q:'Quelle est la difference principale entre VM et conteneur Docker ?',ch:['Aucune','La VM est plus legere','Le conteneur partage le noyau hote, la VM a son propre OS complet','Docker ne peut tourner que sur Linux'],cor:2,opt:'SISR',sub:'Systeme',expl:'Un conteneur Docker partage le noyau de l hote, d ou son extreme legerete (Mo vs Go). Une VM emule un materiel complet avec son propre OS.'},
+{q:'Que fait la commande chmod +x script.sh ?',ch:['Supprime le fichier','Ajoute le droit d execution','Chiffre le fichier','Change le proprietaire'],cor:1,opt:'SISR',sub:'Systeme',expl:'+x ajoute le droit d execution pour le proprietaire, le groupe et les autres. Necesssaire pour lancer un script bash.'},
+{q:'Quelle commande Docker permet d entrer dans un conteneur en cours d execution ?',ch:['docker run','docker start','docker exec -it conteneur bash','docker attach'],cor:2,opt:'SISR',sub:'Systeme',expl:'docker exec -it permet d executer une commande dans un conteneur actif. -i = interactif, -t = terminal.'},
+{q:'Que fait la directive EXPOSE dans un Dockerfile ?',ch:['Ouvre le port sur le pare-feu','Indique le port que le conteneur ecoute (documentation)','Lance automatiquement le service','Mappe le port sur l hote'],cor:1,opt:'SISR',sub:'Systeme',expl:'EXPOSE est documentaire : il indique le port que le conteneur utilise. Le mapping reel se fait avec -p au moment du docker run.'},
+/* SISR - Cybersecurite */
+{q:'Difference principale entre IDS et IPS ?',ch:['L IDS est plus recent','L IDS detecte sans bloquer ; l IPS detecte et bloque','L IPS protege les hotes uniquement','L IDS est materiel'],cor:1,opt:'SISR',sub:'Cybersecurite',expl:'IDS (Intrusion Detection System) est passif : alerte sans agir. IPS (Intrusion Prevention System) est actif dans le flux et peut bloquer.'},
+{q:'En TLS, pourquoi combiner chiffrement asymetrique et symetrique ?',ch:['Pour des raisons legales','Asymetrique pour l echange de cle, symetrique pour les donnees','Symetrique pour l echange, asymetrique pour les donnees','Pour eviter les certificats'],cor:1,opt:'SISR',sub:'Cybersecurite',expl:'L asymetrique (RSA) resout l echange de cle securise mais est lent. AES (symetrique) chiffre rapidement les donnees une fois la cle partagee.'},
+{q:'Quel algorithme de chiffrement symetrique est le standard actuel ?',ch:['DES','RSA','AES-256','MD5'],cor:2,opt:'SISR',sub:'Cybersecurite',expl:'AES-256 (Advanced Encryption Standard, 256 bits) est le standard moderne de chiffrement symetrique. DES est obsolete, RSA est asymetrique, MD5 est un hash.'},
+{q:'Qu est-ce qu une DMZ dans une architecture reseau ?',ch:['Un VLAN d administration','Une zone entre Internet et le LAN qui heberge les serveurs publics','Un type de pare-feu','Un protocole de routage'],cor:1,opt:'SISR',sub:'Cybersecurite',expl:'La DMZ (Zone Demilitarisee) isole les serveurs accessibles depuis Internet (web, mail) du reseau interne prive.'},
+{q:'Que signifie le principe du moindre privilege ?',ch:['Tout le monde a acces a tout','On n attribue que les droits strictement necessaires a chaque utilisateur','Les admins ont tous les droits','Les utilisateurs gerent leurs propres permissions'],cor:1,opt:'SISR',sub:'Cybersecurite',expl:'Le principe du moindre privilege limite les droits au strict necessaire pour chaque utilisateur/service, reduisant la surface d attaque.'},
+{q:'Quel delai maximum pour notifier la CNIL d une violation de donnees (RGPD) ?',ch:['24 heures','48 heures','72 heures','1 semaine'],cor:2,opt:'SISR',sub:'Cybersecurite',expl:'Le RGPD impose une notification a la CNIL dans les 72 heures suivant la decouverte d une violation de donnees personnelles.'},
+{q:'Qu est-ce qu un certificat TLS signe par une CA ?',ch:['Un fichier de configuration','Un document qui associe une cle publique a une identite verifiee','Une cle de chiffrement symetrique','Un pare-feu logiciel'],cor:1,opt:'SISR',sub:'Cybersecurite',expl:'Un certificat TLS signe par une CA (Certificate Authority) atteste que la cle publique appartient bien au proprietaire declare. Sans CA reconnue = avertissement navigateur.'},
+/* SLAM - JavaScript */
+{q:'Que retourne toujours une fonction async ?',ch:['La valeur directement','Une Promise','Un generateur','undefined'],cor:1,opt:'SLAM',sub:'JavaScript',expl:'Toute fonction async retourne une Promise. async function f(){ return 42; } = Promise.resolve(42).'},
+{q:'Qu est-ce que le destructuring en JavaScript ?',ch:['Supprimer un objet','Extraire des valeurs d un objet ou tableau dans des variables','Copier un tableau','Trier un tableau'],cor:1,opt:'SLAM',sub:'JavaScript',expl:'const { name, age } = user; extrait les proprietes d un objet. const [a, b] = arr; extrait les elements d un tableau.'},
+{q:'Que fait l operateur spread ... ?',ch:['Filtre un tableau','Cree une boucle','Copie ou fusionne des tableaux et objets','Supprime des elements'],cor:2,opt:'SLAM',sub:'JavaScript',expl:'... etale les elements : [...arr1, ...arr2] fusionne deux tableaux. { ...obj, newProp: val } copie un objet en ajoutant une propriete.'},
+{q:'Quelle methode lance plusieurs Promises en parallele et attend toutes ?',ch:['Promise.race()','Promise.all()','Promise.first()','async.parallel()'],cor:1,opt:'SLAM',sub:'JavaScript',expl:'Promise.all([p1, p2, p3]) attend que toutes les Promises soient resolues. Plus rapide que les await sequentiels.'},
+{q:'Pourquoi les arrow functions resolvent le probleme du this ?',ch:['Elles n ont pas de this du tout','Elles heritent du this du contexte englobant','Elles creent un nouveau this global','Elles utilisent window comme this'],cor:1,opt:'SLAM',sub:'JavaScript',expl:'Contrairement aux fonctions classiques, les arrow functions n ont pas leur propre this. Elles capturent le this du contexte dans lequel elles sont definies.'},
+{q:'Que fait fetch() en JavaScript ?',ch:['Telecharge un fichier sur le serveur','Effectue une requete HTTP asynchrone','Envoie un email','Lit un fichier local'],cor:1,opt:'SLAM',sub:'JavaScript',expl:'fetch() permet de faire des requetes HTTP (GET, POST, PUT, DELETE) depuis le navigateur. Retourne une Promise.'},
+{q:'Comment importer une fonction depuis un module ES6 ?',ch:['require("./module")','include("./module")','import { maFonction } from "./module"','load("./module")'],cor:2,opt:'SLAM',sub:'JavaScript',expl:'import { maFonction } from "./module" est la syntaxe ES6 Modules. require() est la syntaxe CommonJS (Node.js).'},
+/* SLAM - PHP */
+{q:'Quelle methode PDO protege contre les injections SQL ?',ch:['query() avec echappement','escape()','prepare() avec execute()','sanitize()'],cor:2,opt:'SLAM',sub:'PHP',expl:'Les requetes preparees separent le code SQL des donnees. PDO gere l echappement automatiquement.'},
+{q:'Que fait password_hash() en PHP ?',ch:['Chiffre reversiblement le mot de passe','Cree un hash irreversible securise du mot de passe','Encode en base64','Chiffre avec AES'],cor:1,opt:'SLAM',sub:'PHP',expl:'password_hash() cree un hash bcrypt du mot de passe. On utilise password_verify() pour verifier sans jamais stocker le mot de passe en clair.'},
+{q:'Dans le pattern MVC, quel element gere la logique metier ?',ch:['Model','View','Controller','Router'],cor:2,opt:'SLAM',sub:'PHP',expl:'Le Controller recoit les requetes, appelle le Model pour les donnees, et passe le resultat a la View. Il orchestre la logique.'},
+{q:'Que fait htmlspecialchars() en PHP ?',ch:['Supprime les balises HTML','Convertit les caracteres speciaux HTML en entites (protection XSS)','Encode en UTF-8','Compresse le HTML'],cor:1,opt:'SLAM',sub:'PHP',expl:'htmlspecialchars() convertit <, >, &, " en entites HTML, empechant l injection de code JavaScript dans la page (XSS).'},
+{q:'Quelle superglobale PHP contient les donnees d un formulaire POST ?',ch:['$_GET','$_POST','$_REQUEST','$_FORM'],cor:1,opt:'SLAM',sub:'PHP',expl:'$_POST contient les donnees envoyees via la methode POST (formulaires). $_GET contient les parametres de l URL.'},
+/* SLAM - POO */
+{q:'Que fait super().__init__() en Python ?',ch:['Appelle le destructeur parent','Appelle le constructeur parent','Cree une instance du parent','Remplace le constructeur'],cor:1,opt:'SLAM',sub:'POO',expl:'super().__init__() appelle le constructeur de la classe parente pour initialiser ses attributs. Indispensable en heritage.'},
+{q:'Qu est-ce que l encapsulation en POO ?',ch:['Copier une classe','Cacher les attributs internes et exposer uniquement une interface publique','Heriter d une autre classe','Creer plusieurs instances'],cor:1,opt:'SLAM',sub:'POO',expl:'L encapsulation protege les donnees internes en les rendant privees et en contr olant leur acces via des getters/setters.'},
+{q:'Qu est-ce que le polymorphisme ?',ch:['Avoir plusieurs constructeurs','La meme methode produit des comportements differents selon la classe','Heriter de plusieurs classes','Copier un objet'],cor:1,opt:'SLAM',sub:'POO',expl:'Le polymorphisme permet d appeler la meme methode sur des objets de types differents et d obtenir des comportements specifiques a chaque classe.'},
+{q:'Que signifie __ devant un attribut en Python ?',ch:['Attribut de classe partage','Attribut prive (name mangling)','Attribut statique','Attribut constant'],cor:1,opt:'SLAM',sub:'POO',expl:'Le double underscore (__attr) declenche le "name mangling" : l attribut devient _Classe__attr. Convention Python pour simuler la visibilite privee.'},
+{q:'Qu est-ce que l heritage en POO ?',ch:['Copier le code d une classe','Une classe fille reutilise et etend les attributs et methodes d une classe parente','Creer plusieurs instances d une classe','Cacher les donnees'],cor:1,opt:'SLAM',sub:'POO',expl:'L heritage permet a une classe fille d heriter des attributs et methodes d une classe parente, puis de les specialiser ou d en ajouter de nouveaux.'},
+/* SLAM - API REST */
+{q:'Difference entre PUT et PATCH en REST ?',ch:['Aucune','PUT cree, PATCH modifie','PUT remplace la ressource entiere, PATCH modifie partiellement','PATCH est plus securise'],cor:2,opt:'SLAM',sub:'API REST',expl:'PUT remplace la ressource complete (tous les champs requis). PATCH modifie partiellement (seuls les champs envoyes sont modifies).'},
+{q:'Quel code HTTP signifie que la ressource a ete creee avec succes ?',ch:['200','201','204','400'],cor:1,opt:'SLAM',sub:'API REST',expl:'201 Created est retourne apres un POST reussi qui cree une ressource. 200 OK est le succes general, 204 No Content pour DELETE.'},
+{q:'Que signifie 401 Unauthorized ?',ch:['La ressource n existe pas','Le serveur a plante','L utilisateur n est pas authentifie','L utilisateur n a pas les droits'],cor:2,opt:'SLAM',sub:'API REST',expl:'401 = non authentifie (token manquant ou invalide). 403 Forbidden = authentifie mais pas autorise. 404 = ressource introuvable.'},
+{q:'Un JWT est compose de combien de parties separees par des points ?',ch:['2','3','4','1'],cor:1,opt:'SLAM',sub:'API REST',expl:'Un JWT = Header.Payload.Signature. Chaque partie est encodee en Base64URL. La signature garantit l integrite du token.'},
+{q:'Qu est-ce qu une API RESTful stateless ?',ch:['Elle ne stocke pas de donnees','Chaque requete contient toutes les infos necessaires, le serveur ne garde pas l etat de session','Elle ne necessite pas d authentification','Elle repond toujours le meme resultat'],cor:1,opt:'SLAM',sub:'API REST',expl:'Stateless = sans etat. Chaque requete est independante et autosuffisante. Le client doit envoyer son token d authentification a chaque requete.'},
+/* Commun - SQL */
+{q:'Difference entre WHERE et HAVING en SQL ?',ch:['Ce sont des synonymes','WHERE filtre avant GROUP BY, HAVING filtre apres agregation','HAVING filtre les colonnes','WHERE avec JOIN uniquement'],cor:1,opt:'Commun',sub:'SQL',expl:'WHERE filtre les lignes AVANT le GROUP BY. HAVING filtre les groupes APRES l agregation. On peut utiliser COUNT, SUM dans HAVING mais pas dans WHERE.'},
+{q:'Quel JOIN retourne toutes les lignes de la table gauche meme sans correspondance ?',ch:['INNER JOIN','RIGHT JOIN','LEFT JOIN','CROSS JOIN'],cor:2,opt:'Commun',sub:'SQL',expl:'LEFT JOIN retourne toutes les lignes de la table de gauche. Si pas de correspondance a droite, les colonnes de droite valent NULL.'},
+{q:'Quelle fonction SQL compte le nombre de lignes ?',ch:['SUM()','AVG()','COUNT()','TOTAL()'],cor:2,opt:'Commun',sub:'SQL',expl:'COUNT(*) compte toutes les lignes. COUNT(colonne) compte les lignes ou la colonne n est pas NULL.'},
+{q:'Que garantit une transaction ACID ?',ch:['La rapidite des requetes','Atomicite, Coherence, Isolation, Durabilite','L indexation automatique','La sauvegarde automatique'],cor:1,opt:'Commun',sub:'SQL',expl:'ACID garantit qu une transaction est entierement executee ou pas du tout (atomicite), laisse la BDD dans un etat coherent, est isolee des autres transactions, et ses effets sont permanents.'},
+{q:'Qu est-ce qu un index en SQL ?',ch:['Une cle primaire','Une structure qui accelere les recherches sur une colonne','Un type de JOIN','Une vue'],cor:1,opt:'Commun',sub:'SQL',expl:'Un index permet des recherches tres rapides sur une colonne. Contrepartie : ralentit les INSERT/UPDATE/DELETE et occupe de l espace.'},
+{q:'Quelle clause SQL trie les resultats ?',ch:['SORT BY','GROUP BY','ORDER BY','ARRANGE BY'],cor:2,opt:'Commun',sub:'SQL',expl:'ORDER BY col ASC/DESC trie les resultats. ASC = croissant (defaut), DESC = decroissant. Se place apres WHERE et GROUP BY.'},
+{q:'Qu est-ce qu une cle etrangere (FK) ?',ch:['La cle principale d une table','Une colonne qui reference la cle primaire d une autre table','Un index unique','Un type de contrainte de taille'],cor:1,opt:'Commun',sub:'SQL',expl:'Une FK assure l integrite referentielle : la valeur doit exister dans la table referencee. Exemple : commande.client_id reference client.id.'},
+/* Commun - BDD */
+{q:'Une relation (0,n)-(0,n) en Merise devient quoi dans le MLD ?',ch:['FK dans l une des tables','Table intermediaire avec 2 FK','Attribut calcule','Elle disparait'],cor:1,opt:'Commun',sub:'BDD',expl:'Une relation n,m (many-to-many) se traduit par une table de jonction contenant les cles primaires des deux entites comme cles etrangeres.'},
+{q:'Que signifie la cardinalite (1,1) en Merise ?',ch:['L entite participe 0 ou 1 fois','L entite participe exactement 1 fois (ni plus ni moins)','L entite participe au moins 1 fois','L entite peut participer n fois'],cor:1,opt:'Commun',sub:'BDD',expl:'(1,1) = l entite participe exactement une fois a l association. C est la cardinalite la plus contraignante.'},
+{q:'Qu est-ce que la 3eme forme normale (3NF) ?',ch:['Attributs atomiques','Pas de dependance partielle','Pas de dependance transitive','Pas de redondance du tout'],cor:2,opt:'Commun',sub:'BDD',expl:'3NF : aucun attribut non-cle ne doit dependre d un autre attribut non-cle. Elimine les dependances transitives A→B→C en creant une table separee.'},
+{q:'Dans un MCD, que represente un rectangle ?',ch:['Une association','Une entite','Une cardinalite','Un attribut'],cor:1,opt:'Commun',sub:'BDD',expl:'En Merise, les rectangles representent les entites (tables futures), les ellipses representent les associations entre entites.'},
+/* Commun - Gestion de projet */
+{q:'Dans Scrum, qui priorise le Product Backlog ?',ch:['Scrum Master','Equipe de dev','Product Owner','Manager'],cor:2,opt:'Commun',sub:'Gestion de projet',expl:'Le Product Owner maximise la valeur du produit en priorisant les User Stories selon les besoins metier et les retours clients.'},
+{q:'La regle 3-2-1 des sauvegardes signifie ?',ch:['3 serveurs, 2 sites, 1 cloud','3 copies, 2 supports differents, 1 hors site','3 sauvegardes/jour, 2/semaine, 1/mois','3 formats, 2 outils, 1 responsable'],cor:1,opt:'Commun',sub:'Cybersecurite',expl:'3 copies, sur 2 supports differents, dont 1 hors site. Protege contre la perte, la panne et les catastrophes physiques.'},
+{q:'Quelle est la duree typique d un sprint Scrum ?',ch:['1 jour','1 a 4 semaines','3 mois','6 mois'],cor:1,opt:'Commun',sub:'Gestion de projet',expl:'Un sprint dure generalement 1 a 4 semaines (2 semaines est le plus courant). A la fin, on livre un increment potentiellement livrable.'},
+{q:'Que signifie RACI dans la gestion de projet ?',ch:['Rapide Agile Continu Iteratif','Responsible Accountable Consulted Informed','Risque Analyse Controle Integre','Ressources Activites Couts Impacts'],cor:1,opt:'Commun',sub:'Gestion de projet',expl:'RACI definit les roles sur chaque tache : qui la Realise, qui en est Responsable final, qui est Consulte, qui est Informe.'},
+{q:'Qu est-ce qu une User Story en Agile ?',ch:['Un rapport d anomalie','Une description de fonctionnalite du point de vue de l utilisateur','Un diagramme de sequence','Un test unitaire'],cor:1,opt:'Commun',sub:'Gestion de projet',expl:'Format : "En tant que [role], je veux [action], afin de [benefice]." Permet de centrer le developpement sur la valeur utilisateur.'},
+{q:'Quelle methode classe les risques par probabilite et impact ?',ch:['Diagramme de Gantt','WBS','Matrice des risques','RACI'],cor:2,opt:'Commun',sub:'Gestion de projet',expl:'La matrice des risques calcule un score = probabilite x impact. Les risques avec les scores les plus eleves necessitent un plan de mitigation prioritaire.'},
+{q:'Qu est-ce que le chemin critique en gestion de projet ?',ch:['Le chemin le plus court','La sequence de taches qui determine la duree minimale du projet','La liste des taches prioritaires','Le planning du chef de projet'],cor:1,opt:'Commun',sub:'Gestion de projet',expl:'Le chemin critique est la sequence de taches sans marge. Tout retard sur une tache du chemin critique retarde directement la fin du projet.'},
 ];
+
+var BATCH=10;
+var usedIndices={};
+
+function getRandomQuestions(pool,n){
+  var available=pool.map(function(_,i){return i;}).filter(function(i){return !usedIndices[i];});
+  if(available.length<n){usedIndices={};available=pool.map(function(_,i){return i;});}
+  var shuffled=available.slice().sort(function(){return Math.random()-0.5;});
+  var chosen=shuffled.slice(0,Math.min(n,shuffled.length));
+  chosen.forEach(function(i){usedIndices[i]=true;});
+  return chosen.map(function(i){return pool[i];});
+}
+
+function getFilteredBank(){
+  if(qFilter==='all') return BANQUE;
+  return BANQUE.filter(function(q){return q.opt===qFilter;});
+}
+
+var initQ=getRandomQuestions(BANQUE,BATCH);
 
 var opt='SISR',ficheFilter='all',qFilter='all';
 var answered={},scores={},allQ=initQ.slice();
@@ -326,31 +405,15 @@ function updateScore(){
 
 function resetQ(){answered={};scores={};renderQCM();toast('QCM reinitialise','ok');}
 
-async function generateAIQuestions(){
-  var btn=document.getElementById('aibtn');
-  var loader=document.getElementById('aiload');
-  btn.disabled=true;btn.style.display='none';loader.style.display='flex';
-  var label=qFilter==='all'?'BTS SIO toutes options':qFilter==='SISR'?'BTS SIO SISR (reseaux, systemes, cybersecurite, virtualisation)':qFilter==='SLAM'?'BTS SIO SLAM (developpement web, PHP, POO, API REST, mobile)':'BTS SIO matieres communes (SQL, BDD Merise, gestion de projet, methodes agiles)';
-  var existing=allQ.slice(0,10).map(function(q){return q.q.substring(0,40);}).join(' | ');
-  var prompt='Tu es un professeur de BTS SIO. Genere exactement 6 nouvelles questions QCM pour '+label+'.\n\nNe repete PAS ces sujets deja poses : '+existing+'\n\nReponds UNIQUEMENT avec un JSON valide sans markdown :\n[\n  {\n    "q": "Question ?",\n    "ch": ["Choix A", "Choix B", "Choix C", "Choix D"],\n    "cor": 2,\n    "opt": "'+(qFilter==='all'?'Commun':qFilter)+'",\n    "sub": "Sujet (ex: Reseaux, SQL, JavaScript...)",\n    "expl": "Explication de la bonne reponse en 2-3 phrases."\n  }\n]';
-  try{
-    var proxyUrl='https://corsproxy.io/?url='+encodeURIComponent('https://api.anthropic.com/v1/messages');
-    var res=await fetch(proxyUrl,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':'','anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1500,messages:[{role:'user',content:prompt}]})});
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    var data=await res.json();
-    var text=data.content.map(function(b){return b.text||'';}).join('');
-    var clean=text.replace(/```json|```/g,'').trim();
-    var newQs=JSON.parse(clean);
-    if(Array.isArray(newQs)&&newQs.length>0){
-      allQ=allQ.concat(newQs);
-      toast(newQs.length+' nouvelles questions generees !','ok');
-      renderQCM();
-    }else throw new Error('Format invalide');
-  }catch(e){
-    toast('Generation IA indisponible depuis GitHub Pages.','ko');
-    console.error(e);
-  }
-  finally{btn.disabled=false;btn.style.display='inline-flex';loader.style.display='none';}
+function generateAIQuestions(){
+  var bank=getFilteredBank();
+  var newQs=getRandomQuestions(bank,BATCH);
+  if(newQs.length===0){toast('Tu as vu toutes les questions ! On recommence.','ok');usedIndices={};newQs=getRandomQuestions(bank,BATCH);}
+  allQ=allQ.concat(newQs);
+  answered={};scores={};
+  allQ=newQs.slice();
+  toast(newQs.length+' nouvelles questions !','ok');
+  renderQCM();
 }
 
 function updateProg(){
