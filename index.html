@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BTS SIO — Révision SISR / SLAM</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#09090f;--s1:#111118;--s2:#18181f;--s3:#202028;--sisr:#4f8ef7;--sisr-d:rgba(79,142,247,0.13);--sisr-b:rgba(79,142,247,0.3);--slam:#b06ef7;--slam-d:rgba(176,110,247,0.13);--slam-b:rgba(176,110,247,0.3);--com:#2dd4bf;--com-d:rgba(45,212,191,0.12);--com-b:rgba(45,212,191,0.3);--ok:#22c55e;--ko:#ef4444;--tx:#eeeeff;--mu:#7777aa;--br:#252530}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
+h1,h2,h3,h4,h5{font-family:'Syne',sans-serif}
+code,pre{font-family:'JetBrains Mono',monospace}
+nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid var(--br);position:sticky;top:0;z-index:100;background:rgba(9,9,15,0.95);backdrop-filter:blur(16px)}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;display:flex;align-items:center;gap:0.4rem}
+.ls{color:var(--sisr)}.lsl{color:var(--slam)}.lm{color:var(--mu);font-weight:300}
+.npills{display:flex;gap:0.4rem}
+.np{background:none;border:1px solid var(--br);color:var(--mu);padding:0.4rem 1rem;border-radius:100px;font-family:'DM Sans',sans-serif;font-size:0.8rem;cursor:pointer;transition:all 0.2s}
+.np:hover,.np.on{background:var(--s2);border-color:var(--br);color:var(--tx)}
+.osw-wrap{display:inline-flex;background:var(--s1);border:1px solid var(--br);border-radius:100px;padding:4px;gap:4px;margin-bottom:1.5rem}
+.osw{padding:0.45rem 1.5rem;border-radius:100px;font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;transition:all 0.25s;border:none;color:var(--mu);background:none}
+.osw.s{background:var(--sisr);color:#fff}.osw.sl{background:var(--slam);color:#fff}.osw.a{background:var(--s3);color:var(--tx)}
+.hero{padding:3rem 2rem 2rem;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-60px;left:25%;width:300px;height:300px;background:radial-gradient(ellipse,rgba(79,142,247,0.07),transparent 70%);pointer-events:none}
+.hero::after{content:'';position:absolute;top:-60px;right:25%;width:300px;height:300px;background:radial-gradient(ellipse,rgba(176,110,247,0.07),transparent 70%);pointer-events:none}
+.hero h1{font-size:clamp(1.8rem,4vw,3rem);font-weight:800;line-height:1.1;letter-spacing:-0.04em;margin-bottom:0.7rem}
+.hero p{color:var(--mu);font-size:0.95rem;max-width:500px;margin:0 auto 1.8rem;line-height:1.7}
+.stats{display:flex;gap:3rem;justify-content:center;flex-wrap:wrap}
+.stat strong{display:block;font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:700}
+.stat span{font-size:0.72rem;color:var(--mu);letter-spacing:0.07em;text-transform:uppercase}
+.sec{display:none;padding:0 2rem 4rem;animation:fi 0.25s ease}
+.sec.on{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.tabrow{display:flex;gap:0.4rem;margin-bottom:1.2rem;flex-wrap:wrap}
+.tb{background:var(--s1);border:1px solid var(--br);color:var(--mu);padding:0.35rem 0.9rem;border-radius:100px;font-size:0.78rem;cursor:pointer;white-space:nowrap;transition:all 0.2s;font-family:'DM Sans',sans-serif}
+.tb.as{background:var(--sisr);border-color:var(--sisr);color:#fff}
+.tb.asl{background:var(--slam);border-color:var(--slam);color:#fff}
+.tb.ac{background:var(--com);border-color:var(--com);color:#09090f}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+.card{background:var(--s1);border:1px solid var(--br);border-radius:16px;padding:1.3rem;cursor:pointer;transition:all 0.22s;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--cc)}
+.card:hover{transform:translateY(-3px);border-color:var(--cc);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.cbadge{display:inline-block;font-size:0.68rem;padding:0.18rem 0.6rem;border-radius:6px;margin-bottom:0.7rem;letter-spacing:0.05em;text-transform:uppercase;font-weight:600}
+.cbadge.s{background:var(--sisr-d);color:var(--sisr)}.cbadge.sl{background:var(--slam-d);color:var(--slam)}.cbadge.c{background:var(--com-d);color:var(--com)}
+.card h3{font-size:0.95rem;font-weight:600;margin-bottom:0.45rem;line-height:1.3}
+.card p{font-size:0.8rem;color:var(--mu);line-height:1.6}
+.cfoot{display:flex;align-items:center;justify-content:space-between;margin-top:0.9rem;padding-top:0.75rem;border-top:1px solid var(--br)}
+.cmeta{font-size:0.72rem;color:var(--mu)}
+.cbtn{border:none;padding:0.32rem 0.9rem;border-radius:7px;font-size:0.74rem;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;transition:opacity 0.2s}
+.cbtn:hover{opacity:0.85}
+.cbtn.s{background:var(--sisr);color:#fff}.cbtn.sl{background:var(--slam);color:#fff}.cbtn.c{background:var(--com);color:#09090f}
+.dots{display:flex;gap:3px;margin-top:4px}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--br)}
+.ds{background:var(--sisr)}.dsl{background:var(--slam)}.dc{background:var(--com)}
+.moverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:200;align-items:flex-start;justify-content:center;padding:2rem;overflow-y:auto}
+.moverlay.on{display:flex}
+.modal{background:var(--s1);border:1px solid var(--br);border-radius:20px;max-width:720px;width:100%;padding:2.2rem;position:relative;margin:auto}
+.mclose{position:absolute;top:1.2rem;right:1.2rem;background:var(--s2);border:1px solid var(--br);color:var(--tx);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center}
+.mclose:hover{background:var(--s3)}
+.modal h2{font-size:1.4rem;font-weight:700;margin-bottom:0.4rem}
+.mbadge{display:inline-block;font-size:0.74rem;padding:0.22rem 0.8rem;border-radius:7px;margin-bottom:1.1rem;font-weight:600}
+.modal h4{font-size:0.76rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--mu);margin:1.3rem 0 0.65rem;font-family:'Syne',sans-serif}
+.modal p{font-size:0.89rem;line-height:1.8;margin-bottom:0.65rem;color:var(--tx)}
+.modal ul{padding-left:1.3rem;margin-bottom:0.85rem}
+.modal li{font-size:0.89rem;line-height:1.8;margin-bottom:0.4rem;color:var(--tx)}
+.modal li strong{color:var(--tx)}
+.codeblock{background:var(--s2);border:1px solid var(--br);border-radius:10px;padding:1.1rem 1.3rem;margin:0.85rem 0;overflow-x:auto}
+.codeblock pre{font-size:0.79rem;line-height:1.75;color:#a8c4ff;white-space:pre}
+.tipbox{border-radius:11px;padding:1rem 1.2rem;margin-top:1.3rem;border:1px solid}
+.tipbox p{font-size:0.84rem;margin:0}
+.example-box{border-radius:10px;padding:1rem 1.2rem;margin:0.85rem 0;border-left:3px solid;background:var(--s2)}
+.qcm-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.7rem}
+.sbar{background:var(--s1);border-radius:100px;height:5px;overflow:hidden;margin-bottom:1.1rem}
+.sfill{height:100%;border-radius:100px;background:var(--sisr);transition:width 0.4s}
+.qfilts{display:flex;gap:0.4rem;margin-bottom:1.2rem;flex-wrap:wrap}
+.qf{padding:0.35rem 0.9rem;border-radius:100px;font-size:0.78rem;cursor:pointer;border:1px solid var(--br);background:var(--s1);color:var(--mu);font-family:'DM Sans',sans-serif;transition:all 0.2s}
+.qf.on{color:#fff}.qf.oa.on{background:var(--s2);border-color:var(--mu);color:var(--tx)}.qf.os.on{background:var(--sisr);border-color:var(--sisr)}.qf.osl.on{background:var(--slam);border-color:var(--slam)}.qf.oc.on{background:var(--com);border-color:var(--com);color:#09090f}
+.qcard{background:var(--s1);border:1px solid var(--br);border-radius:14px;padding:1.5rem;margin-bottom:0.9rem}
+.qhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.9rem}
+.qnum{font-size:0.72rem;color:var(--mu)}
+.qopt{font-size:0.67rem;padding:0.18rem 0.6rem;border-radius:6px;font-weight:600;letter-spacing:0.04em}
+.qopt.S{background:var(--sisr-d);color:var(--sisr)}.qopt.SL{background:var(--slam-d);color:var(--slam)}.qopt.C{background:var(--com-d);color:var(--com)}
+.qq{font-family:'Syne',sans-serif;font-size:1rem;font-weight:600;margin-bottom:1rem;line-height:1.4}
+.choices{display:grid;gap:0.5rem}
+.choice{background:var(--s2);border:1px solid var(--br);border-radius:9px;padding:0.7rem 1rem;cursor:pointer;transition:all 0.18s;display:flex;align-items:center;gap:0.7rem;font-size:0.86rem;user-select:none}
+.choice:hover:not(.locked){border-color:var(--mu);background:var(--s3)}
+.choice.ok{border-color:var(--ok);background:rgba(34,197,94,0.08);color:var(--ok)}
+.choice.ko{border-color:var(--ko);background:rgba(239,68,68,0.08);color:var(--ko)}
+.choice.locked{cursor:default}
+.cletter{width:26px;height:26px;border-radius:6px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:0.72rem;font-weight:700;flex-shrink:0;font-family:'Syne',sans-serif}
+.explain{margin-top:0.7rem;font-size:0.82rem;padding:0.7rem 0.95rem;background:var(--s2);border-radius:8px;line-height:1.65}
+.ai-section{background:var(--s1);border:1px solid var(--br);border-radius:14px;padding:1.8rem;margin-top:1rem;text-align:center}
+.ai-section h3{font-size:1.05rem;font-weight:700;margin-bottom:0.4rem}
+.ai-section p{font-size:0.84rem;color:var(--mu);margin-bottom:1.3rem}
+.aibtn{background:linear-gradient(135deg,var(--sisr),var(--slam));border:none;color:#fff;padding:0.7rem 2rem;border-radius:100px;font-family:'Syne',sans-serif;font-weight:600;font-size:0.92rem;cursor:pointer;transition:opacity 0.2s;display:inline-flex;align-items:center;gap:0.5rem}
+.aibtn:hover{opacity:0.87}.aibtn:disabled{opacity:0.45;cursor:not-allowed}
+.ai-loading{display:none;align-items:center;gap:0.7rem;justify-content:center;font-size:0.84rem;color:var(--mu);margin-top:0.8rem}
+.spinner{width:20px;height:20px;border:2px solid var(--br);border-top-color:var(--sisr);border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pg{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:0.9rem;margin-bottom:1.2rem}
+.pc{background:var(--s1);border:1px solid var(--br);border-radius:13px;padding:1.1rem}
+.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.55rem}
+.pt{font-size:0.84rem;font-weight:500}.pp{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700}
+.pb{background:var(--s2);border-radius:100px;height:4px;overflow:hidden}
+.pf{height:100%;border-radius:100px;transition:width 0.5s}
+.psub{font-size:0.7rem;color:var(--mu);margin-top:0.4rem}
+.psect{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--mu);margin:1.5rem 0 0.7rem;padding-bottom:0.4rem;border-top:1px solid var(--br);padding-top:0.9rem}
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--s1);border:1px solid var(--br);border-radius:10px;padding:0.75rem 1.3rem;font-size:0.83rem;z-index:400;transform:translateY(60px);opacity:0;transition:all 0.25s}
+.toast.on{transform:translateY(0);opacity:1}
+.toast.ok{border-color:var(--ok);color:var(--ok)}.toast.ko{border-color:var(--ko);color:var(--ko)}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--br);border-radius:4px}
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo"><span class="ls">SISR</span><span class="lm" style="margin:0 2px">/</span><span class="lsl">SLAM</span><span class="lm" style="font-size:0.85rem;margin-left:4px">.rev</span></div>
+  <div class="npills">
+    <button class="np on" onclick="goSec('fiches',this)">Fiches</button>
+    <button class="np" onclick="goSec('qcm',this)">QCM IA</button>
+    <button class="np" onclick="goSec('prog',this)">Progres</button>
+  </div>
+</nav>
+<div class="hero">
+  <div class="osw-wrap">
+    <button class="osw s" id="osws" onclick="setOpt('SISR')">SISR</button>
+    <button class="osw" id="oswa" onclick="setOpt('ALL')" style="font-size:0.78rem">Tout</button>
+    <button class="osw" id="oswsl" onclick="setOpt('SLAM')">SLAM</button>
+  </div>
+  <h1 id="htitle">Solutions d'Infrastructure<br><span style="color:var(--sisr)">Systemes et Reseaux</span></h1>
+  <p id="hdesc">Fiches detaillees avec exemples concrets, QCM generes par IA illimites, suivi de progression.</p>
+  <div class="stats">
+    <div class="stat"><strong id="sf">8</strong><span>Fiches</span></div>
+    <div class="stat"><strong>infini</strong><span>Questions IA</span></div>
+    <div class="stat"><strong id="sc">6</strong><span>Communes</span></div>
+  </div>
+</div>
+<div class="sec on" id="fiches">
+  <div class="tabrow" id="ftabs"></div>
+  <div class="cards" id="cgrid"></div>
+</div>
+<div class="sec" id="qcm">
+  <div class="qcm-top">
+    <div><h2 style="font-size:1.15rem;font-weight:700;margin-bottom:0.1rem">QCM interactif</h2><p style="font-size:0.8rem;color:var(--mu)">Score : <span id="stxt">0 / 0</span></p></div>
+    <button onclick="resetQ()" style="background:var(--s2);border:1px solid var(--br);color:var(--mu);padding:0.4rem 1rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.78rem;cursor:pointer">Reinitialiser</button>
+  </div>
+  <div class="sbar"><div class="sfill" id="sfill" style="width:0%"></div></div>
+  <div class="qfilts">
+    <button class="qf oa on" onclick="setQF('all',this)">Tout</button>
+    <button class="qf os" onclick="setQF('SISR',this)">SISR</button>
+    <button class="qf osl" onclick="setQF('SLAM',this)">SLAM</button>
+    <button class="qf oc" onclick="setQF('Commun',this)">Commun</button>
+  </div>
+  <div id="qcon"></div>
+  <div class="ai-section" id="aiSection" style="display:none">
+    <h3>Serie terminee !</h3>
+    <p>Tu as repondu a toutes les questions. L'IA va en generer de nouvelles, differentes et adaptees a ton option.</p>
+    <button class="aibtn" id="aibtn" onclick="generateAIQuestions()">Generer de nouvelles questions</button>
+    <div class="ai-loading" id="aiload"><div class="spinner"></div>L'IA genere tes questions...</div>
+  </div>
+</div>
+<div class="sec" id="prog">
+  <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:0.25rem">Ma progression</h2>
+  <p style="font-size:0.8rem;color:var(--mu);margin-bottom:1.3rem">Base sur tes reponses aux QCM</p>
+  <div id="pcon"></div>
+</div>
+<div class="moverlay" id="moverlay" onclick="closeMW(event)">
+  <div class="modal"><button class="mclose" onclick="closeMB()">x</button><div id="mbody"></div></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+var fiches=[
+{id:1,opt:'SISR',cat:'Reseaux',title:'Modele OSI et TCP/IP',desc:'Les 7 couches OSI, TCP vs UDP, adressage IPv4/v6 et calcul de sous-reseaux.',diff:2,time:'25 min',content:'<h4>Les 7 couches du modele OSI</h4><p>Le modele OSI standardise les communications en 7 couches. Chaque couche a un role precis.</p><ul><li><strong>Couche 7 - Application</strong> : Interface utilisateur. Protocoles : HTTP, FTP, DNS, SMTP, SSH.</li><li><strong>Couche 6 - Presentation</strong> : Encodage, compression, chiffrement TLS/SSL.</li><li><strong>Couche 5 - Session</strong> : Ouverture et fermeture des sessions de communication.</li><li><strong>Couche 4 - Transport</strong> : Segmentation des donnees. TCP (fiable) et UDP (rapide).</li><li><strong>Couche 3 - Reseau</strong> : Routage des paquets via IP. Materiel : routeur.</li><li><strong>Couche 2 - Liaison</strong> : Trames, adresse MAC. Materiel : switch.</li><li><strong>Couche 1 - Physique</strong> : Bits bruts sur le support physique. Materiel : cable, hub.</li></ul><div style="background:rgba(79,142,247,0.08);border:1px solid rgba(79,142,247,0.25);border-radius:8px;padding:0.9rem;margin:0.8rem 0"><p style="font-size:0.82rem;color:#aac4ff"><strong>Mnémotechnique :</strong> "Peut-on Resoudre Tous Ses Problemes Avec l aide ?" = Physique, Liaison, Reseau, Transport, Session, Presentation, Application</p></div><h4>TCP vs UDP</h4><p><strong>TCP</strong> : connexion avec handshake (SYN-SYN/ACK-ACK), accusé de réception garanti. Utilise pour HTTP, FTP, email.</p><p><strong>UDP</strong> : sans connexion, sans verification. Plus rapide. Utilise pour le streaming, VoIP, jeux en ligne.</p><h4>Calcul de sous-reseaux CIDR</h4><div class="codeblock"><pre>Exemple : 192.168.1.0/26\n/26 = 64 adresses totales\nHotes utilisables = 64 - 2 = 62\nAdresse reseau : 192.168.1.0\nBroadcast       : 192.168.1.63\nHotes           : 192.168.1.1 a .62\n\nTableau a memoriser :\n/24 = 254 hotes  /25 = 126  /26 = 62  /27 = 30  /28 = 14</pre></div>'},
+{id:2,opt:'SISR',cat:'Reseaux',title:'VLAN et Routage',desc:'Segmentation VLAN, trunks 802.1Q, routage statique et dynamique OSPF/RIP.',diff:3,time:'25 min',content:'<h4>Pourquoi les VLANs ?</h4><p>Un VLAN cree des reseaux logiques separes sur le meme materiel physique. Sans VLAN, tous les appareils se voient mutuellement.</p><div class="example-box" style="border-color:var(--sisr)"><p style="font-size:0.83rem;color:var(--mu)"><strong style="color:var(--tx)">Exemple entreprise :</strong><br>VLAN 10 - Direction : 192.168.10.0/24<br>VLAN 20 - RH : 192.168.20.0/24<br>VLAN 30 - Informatique : 192.168.30.0/24<br>Un PC du VLAN RH ne peut pas acceder aux serveurs de la Direction.</p></div><h4>Port Access vs Trunk (802.1Q)</h4><p>Port <strong>access</strong> = un seul VLAN (pour PC, imprimante). Port <strong>trunk</strong> = plusieurs VLANs (entre switches, switch et routeur). 802.1Q ajoute un tag de 4 octets dans la trame.</p><div class="codeblock"><pre>Config Cisco :\nPort access : switchport mode access\n              switchport access vlan 20\nPort trunk  : switchport mode trunk\n              switchport trunk allowed vlan 10,20,30</pre></div><h4>Routage inter-VLAN</h4><p>Les VLANs sont isoles. Pour communiquer entre eux : un routeur. Methode "Router-on-a-stick" avec des sous-interfaces.</p><div class="codeblock"><pre>Router(config)# interface g0/0.10\nRouter(config-subif)# encapsulation dot1Q 10\nRouter(config-subif)# ip address 192.168.10.1 255.255.255.0</pre></div>'},
+{id:3,opt:'SISR',cat:'Cybersecurite',title:'Pare-feu, IDS/IPS et DMZ',desc:'Filtrage stateless/stateful, zones de securite, IDS/IPS et architecture DMZ.',diff:2,time:'20 min',content:'<h4>Types de pare-feu</h4><p><strong>Stateless</strong> : filtre chaque paquet independamment (IP/port). Simple mais contournable.<br><strong>Stateful</strong> : suit l etat des connexions TCP. Standard actuel.</p><div class="codeblock"><pre>iptables Linux :\niptables -A INPUT -p tcp --dport 22 -j ACCEPT   # SSH\niptables -A INPUT -m state --state ESTABLISHED -j ACCEPT\niptables -P INPUT DROP   # Bloquer par defaut</pre></div><h4>Architecture DMZ</h4><div class="example-box" style="border-color:var(--sisr)"><p style="font-size:0.83rem;color:var(--mu)"><strong style="color:var(--tx)">Architecture :</strong><br>Internet - Pare-feu 1 - DMZ (Serveur Web, Mail) - Pare-feu 2 - LAN interne<br>Si le serveur Web est compromis, l attaquant ne peut pas acceder directement au LAN.</p></div><h4>IDS vs IPS</h4><p><strong>IDS</strong> (Intrusion Detection System) : passif, genere des alertes sans bloquer.<br><strong>IPS</strong> (Intrusion Prevention System) : actif, bloque le trafic malveillant en temps reel.<br>Outil courant : Snort (peut fonctionner en mode IDS ou IPS).</p>'},
+{id:4,opt:'SISR',cat:'Systeme',title:'Administration Linux',desc:'Gestion des droits, processus, services systemd, scripts bash et automatisation.',diff:2,time:'30 min',content:'<h4>Gestion des droits Unix</h4><p>Permissions pour : proprietaire (u), groupe (g), autres (o). r=4, w=2, x=1.</p><div class="codeblock"><pre>ls -l fichier.sh\n-rwxr-xr-- 1 alice devops 1024 fichier.sh\n rwx = 7 (owner : tout)\n r-x = 5 (group : lecture + execution)\n r-- = 4 (others : lecture seule)\n\nchmod 754 fichier.sh\nchown alice:devops fichier.sh</pre></div><h4>Gestion des services systemd</h4><div class="codeblock"><pre>systemctl start nginx       # Demarrer\nsystemctl stop nginx        # Arreter\nsystemctl restart nginx     # Redemarrer\nsystemctl enable nginx      # Demarrer au boot\nsystemctl status nginx      # Voir l etat\njournalctl -u nginx -f      # Logs en temps reel</pre></div><h4>Script bash : sauvegarde automatique</h4><div class="codeblock"><pre>#!/bin/bash\nDATE=$(date +%Y-%m-%d)\nSOURCE="/var/www/html"\nDEST="/backup/web-$DATE.tar.gz"\n\ntar -czf "$DEST" "$SOURCE"\n\nif [ $? -eq 0 ]; then\n    echo "Sauvegarde OK : $DEST"\nelse\n    echo "ERREUR !" &gt;&amp;2\n    exit 1\nfi\n\n# Automatiser (crontab) :\n# 0 2 * * * /home/admin/backup.sh</pre></div>'},
+{id:5,opt:'SISR',cat:'Systeme',title:'Virtualisation et Docker',desc:'Hyperviseurs Type 1/2, Docker, Dockerfile, docker-compose.',diff:2,time:'20 min',content:'<h4>Type 1 vs Type 2</h4><p><strong>Type 1 (bare-metal)</strong> : directement sur le materiel. Performant, production. Ex : VMware ESXi, Hyper-V, KVM.<br><strong>Type 2 (hosted)</strong> : sur un OS existant. Developpement/test. Ex : VirtualBox, VMware Workstation.</p><div class="example-box" style="border-color:var(--sisr)"><p style="font-size:0.83rem;color:var(--mu)"><strong style="color:var(--tx)">VM vs Conteneur :</strong><br>VM = maison complete avec son OS (Go, lente a demarrer).<br>Conteneur Docker = partage le noyau Linux de l hote (Mo, demarrage en secondes).</p></div><h4>Commandes Docker essentielles</h4><div class="codeblock"><pre>docker pull nginx                    # Telecharger une image\ndocker run -d -p 80:80 --name web nginx  # Lancer\ndocker ps                            # Voir les conteneurs\ndocker exec -it web bash             # Entrer dans un conteneur\ndocker stop web && docker rm web     # Arreter + supprimer</pre></div><h4>Dockerfile exemple</h4><div class="codeblock"><pre>FROM php:8.2-apache\nWORKDIR /var/www/html\nCOPY . .\nRUN chmod -R 755 /var/www/html\nEXPOSE 80\nCMD ["apache2-foreground"]\n\n# Construire et lancer :\n# docker build -t mon-app .\n# docker run -d -p 8080:80 mon-app</pre></div>'},
+{id:6,opt:'SISR',cat:'Cybersecurite',title:'Chiffrement TLS et PKI',desc:'Chiffrement symetrique/asymetrique, AES, RSA, TLS et autorites de certification.',diff:3,time:'25 min',content:'<h4>Chiffrement symetrique</h4><p>Meme cle pour chiffrer et dechiffrer. Tres rapide. Algorithme : <strong>AES-256</strong>.<br>Probleme : comment echanger la cle de facon securisee ?</p><div class="example-box" style="border-color:var(--sisr)"><p style="font-size:0.83rem;color:var(--mu)"><strong style="color:var(--tx)">Analogie :</strong> Alice et Bob partagent le meme cadenas. Pratique, mais comment se passer la cle sans se rencontrer ?</p></div><h4>Chiffrement asymetrique</h4><p>Paire de cles : <strong>cle publique</strong> (partageable) + <strong>cle privee</strong> (secrete). Ce que chiffre la publique, seule la privee peut le dechiffrer. Algorithme : <strong>RSA-2048/4096</strong>.</p><h4>Fonctionnement de TLS (HTTPS)</h4><div class="codeblock"><pre>1. Client contacte le serveur\n2. Serveur envoie son certificat (cle publique + signature CA)\n3. Client verifie le certificat aupres de la CA\n4. Client genere une cle de session, la chiffre avec la cle publique\n5. Serveur dechiffre avec sa cle privee\n6. Toute la communication est chiffree en AES avec la cle de session\n\nAsymetrique = echange de cle securise\nSymetrique  = chiffrement des donnees rapide</pre></div><h4>PKI</h4><p>La PKI gere les certificats. La <strong>CA (Certificate Authority)</strong> signe les certificats. Ex : Let s Encrypt (gratuit), DigiCert. Sans CA reconnue = avertissement securite dans le navigateur.</p>'},
+{id:7,opt:'SISR',cat:'Reseaux',title:'Services reseau DNS DHCP SSH',desc:'DNS, DHCP (DORA), HTTP/S, FTP, SSH - fonctionnement et configuration.',diff:2,time:'20 min',content:'<h4>DNS - Domain Name System</h4><div class="codeblock"><pre>Types d enregistrements :\nA     : nom.com → 93.184.216.34 (IPv4)\nAAAA  : nom.com → 2606:2800::1 (IPv6)\nCNAME : alias vers un autre nom\nMX    : serveur mail pour @nom.com\nNS    : serveurs DNS autoritaires\nTXT   : donnees texte (SPF, DKIM...)\n\nResolution : Cache navigateur → Cache OS → Resolver\n→ Serveur racine → Serveur TLD → Serveur autoritaire</pre></div><h4>DHCP - Processus DORA</h4><div class="codeblock"><pre>D = Discover  : client broadcast "qui peut me donner une IP ?"\nO = Offer     : serveur DHCP propose une IP\nR = Request   : client accepte l offre\nA = Acknowledge : serveur confirme\n\nLe client recoit : IP, Masque, Passerelle, DNS, Duree du bail</pre></div><h4>SSH - Connexion securisee</h4><div class="codeblock"><pre>ssh user@192.168.1.50           # Par mot de passe\nssh -i cle_privee user@server   # Par cle RSA (plus sur)\nssh -p 2222 user@server         # Port personnalise\n\n# Generer une paire de cles :\nssh-keygen -t rsa -b 4096\nssh-copy-id user@server         # Copier la cle publique</pre></div>'},
+{id:8,opt:'SISR',cat:'Cybersecurite',title:'Securite et RGPD',desc:'PSSI, gestion des acces, menaces courantes et obligations RGPD.',diff:1,time:'15 min',content:'<h4>Menaces courantes</h4><ul><li><strong>Phishing</strong> : faux email imitant une entite de confiance. Signes : expediteur suspect, urgence artificielle, lien douteux.</li><li><strong>Ransomware</strong> : chiffre vos donnees, demande une rancon. Prevention : sauvegardes regulieres hors ligne.</li><li><strong>Bruteforce</strong> : teste toutes les combinaisons de mots de passe. Prevention : verrouillage, MFA.</li><li><strong>Man-in-the-Middle</strong> : l attaquant intercepte les communications. Prevention : TLS, eviter les WiFi publics sans VPN.</li></ul><h4>RGPD - Obligations cles</h4><div class="example-box" style="border-color:var(--sisr)"><p style="font-size:0.83rem;color:var(--mu)"><strong style="color:var(--tx)">A retenir :</strong><br>- Consentement explicite avant toute collecte de donnees personnelles<br>- Droit a l oubli : l utilisateur peut demander la suppression<br>- Notification de breach a la CNIL sous 72 heures maximum<br>- Privacy by design : integrer la protection des la conception<br>- Amendes jusqu a 20M euros ou 4% du CA mondial<br>- Autorite francaise : CNIL</p></div>'},
+{id:9,opt:'SLAM',cat:'Developpement Web',title:'JavaScript ES6+',desc:'Arrow functions, closures, async/await, Fetch API, modules ES et destructuring.',diff:3,time:'35 min',content:'<h4>Arrow functions et le contexte this</h4><div class="codeblock"><pre>// Syntaxe :\nconst double = x =&gt; x * 2;\nconst add = (a, b) =&gt; a + b;\n\n// Probleme du this dans les classes :\nclass Timer {\n  constructor() { this.count = 0; }\n  start() {\n    // Fonctionne : arrow function herite du this de start()\n    setInterval(() =&gt; {\n      this.count++;  // this = instance Timer\n    }, 1000);\n  }\n}</pre></div><h4>Async/Await avec gestion d erreurs</h4><div class="codeblock"><pre>async function fetchUser(id) {\n  try {\n    const response = await fetch(`/api/users/${id}`);\n    if (!response.ok) {\n      throw new Error(`Erreur HTTP ${response.status}`);\n    }\n    return await response.json();\n  } catch (error) {\n    console.error("Erreur API:", error.message);\n    throw error;\n  }\n}\n\n// Appels en parallele (plus rapide) :\nconst [user, posts] = await Promise.all([\n  fetchUser(42),\n  fetch("/api/posts").then(r =&gt; r.json())\n]);</pre></div><h4>Destructuring et Spread</h4><div class="codeblock"><pre>// Objet :\nconst { name = "Anonyme", age, address: { city } } = user;\n\n// Tableau :\nconst [first, , third, ...rest] = [1, 2, 3, 4, 5];\n\n// Spread (copie sans mutation) :\nconst updated = { ...user, role: "admin" };\nconst merged = [...list1, ...list2];</pre></div>'},
+{id:10,opt:'SLAM',cat:'POO',title:'Programmation Orientee Objet',desc:'Classes, heritage, polymorphisme, encapsulation - exemples complets Python et Java.',diff:2,time:'30 min',content:'<h4>Classe et objet</h4><div class="codeblock"><pre>class Voiture:\n    nb_roues = 4  # Attribut de classe\n\n    def __init__(self, marque, modele, prix):\n        self.marque = marque\n        self.__prix = prix  # Prive (double underscore)\n\n    @property\n    def prix(self):\n        return self.__prix\n\n    @prix.setter\n    def prix(self, valeur):\n        if valeur < 0:\n            raise ValueError("Prix negatif impossible")\n        self.__prix = valeur\n\n    def __str__(self):\n        return f"{self.marque} - {self.__prix} euros"\n\nma_voiture = Voiture("Renault", "Clio", 18500)\nprint(ma_voiture)     # Renault - 18500 euros</pre></div><h4>Heritage et polymorphisme</h4><div class="codeblock"><pre>class Animal:\n    def __init__(self, nom):\n        self.nom = nom\n\n    def parler(self):\n        raise NotImplementedError("Methode abstraite")\n\nclass Chien(Animal):\n    def __init__(self, nom, race):\n        super().__init__(nom)  # Appel du constructeur parent\n        self.race = race\n\n    def parler(self):  # Override\n        return f"{self.nom} dit : Ouaf !"\n\nclass Chat(Animal):\n    def parler(self):\n        return f"{self.nom} dit : Miaou..."\n\n# Polymorphisme en action :\nanimaux = [Chien("Rex", "Berger"), Chat("Luna")]\nfor a in animaux:\n    print(a.parler())  # Comportement different selon le type</pre></div>'},
+{id:11,opt:'SLAM',cat:'Developpement Web',title:'PHP et Architecture MVC',desc:'PHP POO, PDO securise, pattern MVC complet avec exemple, sessions.',diff:3,time:'30 min',content:'<h4>PDO - Requetes securisees</h4><div class="codeblock"><pre>// DANGEREUX - injection SQL possible :\n$sql = "SELECT * FROM users WHERE email = \'" . $_POST["email"] . "\'";\n\n// CORRECT - requetes preparees PDO :\n$pdo = new PDO("mysql:host=localhost;dbname=myapp;charset=utf8",\n    "user", "pass",\n    [PDO::ATTR_ERRMODE =&gt; PDO::ERRMODE_EXCEPTION]\n);\n\n$stmt = $pdo-&gt;prepare("SELECT * FROM users WHERE email = :email");\n$stmt-&gt;execute(["email" =&gt; $_POST["email"]]);\n$user = $stmt-&gt;fetch(PDO::FETCH_ASSOC);\n\n// Insertion avec hashage du mot de passe :\n$stmt = $pdo-&gt;prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");\n$stmt-&gt;execute([\n    htmlspecialchars($_POST["name"]),\n    filter_var($_POST["email"], FILTER_SANITIZE_EMAIL),\n    password_hash($_POST["password"], PASSWORD_BCRYPT)\n]);</pre></div><h4>Pattern MVC</h4><div class="codeblock"><pre>// MODEL - UserModel.php (acces donnees)\nclass UserModel {\n    public function findById(int $id): ?array {\n        $stmt = $this-&gt;pdo-&gt;prepare("SELECT * FROM users WHERE id = ?");\n        $stmt-&gt;execute([$id]);\n        return $stmt-&gt;fetch() ?: null;\n    }\n}\n\n// CONTROLLER - UserController.php (logique)\nclass UserController {\n    public function show(int $id): void {\n        $user = (new UserModel())-&gt;findById($id);\n        if (!$user) { http_response_code(404); return; }\n        require "views/user/show.php";\n    }\n}\n\n// VIEW - views/user/show.php (affichage uniquement)\n// &lt;h1&gt;&lt;?= htmlspecialchars($user["name"]) ?&gt;&lt;/h1&gt;</pre></div>'},
+{id:12,opt:'SLAM',cat:'Mobile et API',title:'API REST et JSON',desc:'Conception RESTful, codes HTTP, authentification JWT et consommation avec fetch.',diff:2,time:'20 min',content:'<h4>Principes REST</h4><div class="codeblock"><pre>GET    /api/articles       → 200 + liste\nGET    /api/articles/42   → 200 + article (ou 404)\nPOST   /api/articles      → 201 + article cree\nPUT    /api/articles/42   → 200 + ressource remplacee\nPATCH  /api/articles/42   → 200 + modification partielle\nDELETE /api/articles/42   → 204 + supprime\n\nCodes HTTP :\n200 OK          201 Created     204 No Content\n400 Bad Request 401 Unauthorized 403 Forbidden\n404 Not Found   422 Unprocessable 500 Server Error</pre></div><h4>JWT - Authentification sans session</h4><div class="codeblock"><pre>// Structure JWT : header.payload.signature\n// Le token prouve l identite sans stocker de session serveur\n\nasync function login(email, password) {\n    const res = await fetch("/api/auth/login", {\n        method: "POST",\n        headers: { "Content-Type": "application/json" },\n        body: JSON.stringify({ email, password })\n    });\n    const { token } = await res.json();\n    sessionStorage.setItem("jwt", token);\n}\n\nasync function getProfile() {\n    const res = await fetch("/api/me", {\n        headers: { "Authorization": `Bearer ${sessionStorage.getItem("jwt")}` }\n    });\n    if (res.status === 401) {\n        sessionStorage.removeItem("jwt");\n        window.location.href = "/login";\n    }\n    return res.json();\n}</pre></div>'},
+{id:13,opt:'Commun',cat:'Bases de donnees',title:'SQL complet avec exemples',desc:'SELECT avance, tous les JOINs, agregats, sous-requetes et transactions ACID.',diff:2,time:'30 min',content:'<h4>Tous les JOINs</h4><div class="codeblock"><pre>-- Tables : Clients (id, nom) et Commandes (id, client_id, montant)\n\n-- INNER JOIN : clients AVEC commandes uniquement\nSELECT c.nom, co.montant\nFROM Clients c\nINNER JOIN Commandes co ON c.id = co.client_id;\n\n-- LEFT JOIN : TOUS les clients (meme sans commande)\nSELECT c.nom, COUNT(co.id) AS nb, COALESCE(SUM(co.montant),0) AS total\nFROM Clients c\nLEFT JOIN Commandes co ON c.id = co.client_id\nGROUP BY c.id, c.nom\nORDER BY total DESC;</pre></div><h4>GROUP BY et HAVING</h4><div class="codeblock"><pre>-- Clients avec plus de 3 commandes ET total > 500 euros\nSELECT c.nom,\n       COUNT(co.id) AS nb_commandes,\n       SUM(co.montant) AS total,\n       AVG(co.montant) AS panier_moyen\nFROM Clients c\nJOIN Commandes co ON c.id = co.client_id\nWHERE co.statut = "payee"    -- Filtre AVANT agregation\nGROUP BY c.id, c.nom\nHAVING COUNT(co.id) &gt; 3      -- Filtre APRES agregation\n   AND SUM(co.montant) &gt; 500\nORDER BY total DESC LIMIT 10;</pre></div><h4>Transactions ACID</h4><div class="codeblock"><pre>START TRANSACTION;\n-- Virement : debit compte 1, credit compte 2\nUPDATE Comptes SET solde = solde - 500 WHERE id = 1;\nUPDATE Comptes SET solde = solde + 500 WHERE id = 2;\n\nCOMMIT;   -- Les deux operations sont permanentes\n-- ou ROLLBACK si une erreur est detectee\n\n-- Grace a ATOMICITE : impossible que seul le debit soit fait</pre></div>'},
+{id:14,opt:'Commun',cat:'Bases de donnees',title:'Merise et UML',desc:'MCD, cardinalites, passage MCD vers MLD, normalisation et diagrammes UML.',diff:3,time:'30 min',content:'<h4>MCD - Exemple bibliotheque</h4><div class="codeblock"><pre>Entites :\n  ADHERENT (num_adh, nom, prenom, email)\n  LIVRE    (ISBN, titre, annee)\n  AUTEUR   (id_auteur, nom, prenom)\n  CATEGORIE(id_cat, libelle)\n\nAssociations et cardinalites :\n  ADHERENT (0,n) -- EMPRUNTE -- (0,1) LIVRE\n    Un adherent peut emprunter 0 a n livres\n    Un livre est emprunte par 0 ou 1 adherent a la fois\n    L association EMPRUNTE a des attributs : date_debut, date_fin\n\n  LIVRE (1,n) -- APPARTIENT -- (1,1) CATEGORIE\n    Un livre appartient a exactement 1 categorie\n\n  LIVRE (0,n) -- ECRIT_PAR -- (1,n) AUTEUR\n    Relation n,m → table intermediaire</pre></div><h4>Passage MCD vers MLD</h4><div class="codeblock"><pre>Regles :\n1. Entite → table avec sa cle primaire\n2. Relation (1,1)-(0,n) → FK dans la table cote (0,n)\n3. Relation (n,m) → TABLE INTERMEDIAIRE avec 2 FK\n\nMLD resultant :\nADHERENT(num_adh, nom, prenom, email)\nCATEGORIE(id_cat, libelle)\nAUTEUR(id_auteur, nom, prenom)\nLIVRE(ISBN, titre, annee, #id_cat)  -- FK vers CATEGORIE\nEMPRUNT(#num_adh, #ISBN, date_debut, date_fin)  -- Table intermediaire\nECRITURE(#ISBN, #id_auteur)  -- Table intermediaire LIVRE-AUTEUR</pre></div><h4>Formes normales</h4><div class="codeblock"><pre>1NF : Attributs atomiques (pas de valeurs multiples dans une cellule)\n2NF : Pas de dependance partielle (tout depend de TOUTE la cle)\n3NF : Pas de dependance transitive\n      Ex: Employe(id, nom, dept_id, dept_nom) VIOLE 3NF\n      Corriger : creer table Departement(dept_id, dept_nom)</pre></div>'},
+{id:15,opt:'Commun',cat:'Gestion de projet',title:'Methodes Agiles et Scrum',desc:'Sprints, user stories, backlog, ceremonies Scrum, Kanban et cycle en V.',diff:1,time:'20 min',content:'<h4>Cycle en V vs Agile</h4><div class="example-box" style="border-color:var(--com)"><p style="font-size:0.83rem;color:var(--mu)"><strong style="color:var(--tx)">Cycle en V :</strong> sequentiel, toutes les specs avant de commencer, rigide.<br><strong style="color:var(--tx)">Agile :</strong> iteratif, livraisons courtes, le client peut changer les besoins entre les sprints.</p></div><h4>User Stories</h4><div class="codeblock"><pre>Format : "En tant que [ROLE], je veux [FONCTIONNALITE],\n          afin de [BENEFICE]."\n\nExemple :\n"En tant qu acheteur, je veux filtrer les produits par prix,\n afin de trouver rapidement ce qui correspond a mon budget."\n\nCriteres d acceptation (Definition of Done) :\n- Filtre avec curseur min/max 0-10000 euros\n- Resultats mis a jour en temps reel\n- Fonctionne sur mobile\n- Temps de reponse &lt; 200ms</pre></div><h4>Deroulement d un Sprint</h4><div class="codeblock"><pre>Sprint de 2 semaines :\n\nLundi J1 - Sprint Planning (2-4h) :\n  Selection des User Stories + estimation en Story Points\n  (Fibonacci : 1, 2, 3, 5, 8, 13...)\n\nChaque jour - Daily Scrum (15 min MAX) :\n  - Qu ai-je fait hier ?\n  - Que vais-je faire aujourd hui ?\n  - Y a-t-il des blocages ?\n\nVendredi J10 - Sprint Review : demo au client\nVendredi J10 - Retrospective : ameliorer le processus</pre></div>'},
+{id:16,opt:'Commun',cat:'Gestion de projet',title:'Gestion de projet classique',desc:'Gantt, WBS, analyse des risques, matrice RACI et indicateurs de pilotage.',diff:2,time:'20 min',content:'<h4>WBS - Decomposition du projet</h4><div class="codeblock"><pre>Projet : Site e-commerce\nPour chaque livrable on decompose en taches estimables :\n\n1. Cadrage\n   1.1 Recueil des besoins\n   1.2 Cahier des charges\n2. Conception\n   2.1 Maquettes UI/UX\n   2.2 Architecture technique\n   2.3 Modelisation BDD (MCD/MLD)\n3. Developpement\n   3.1 Back-end (API)\n   3.2 Front-end\n   3.3 Integration paiement\n4. Tests et Deploiement</pre></div><h4>Matrice RACI</h4><div class="codeblock"><pre>R = Realise  A = Responsable final  C = Consulte  I = Informe\n\nTache               Chef proj  Dev    Client  DSI\nCahier des charges    A        C       R       I\nArchitecture          I        R       C       A\nDeveloppement         A        R       I       I\nRecette client        C        I       R       A</pre></div><h4>Analyse des risques</h4><div class="codeblock"><pre>Score = Probabilite x Impact (echelle 1-5)\n\nRisque                Prob  Impact  Score  Action\nRetard fournisseur     3      4      12    Fournisseur secours\nDepart dev cle         2      5      10    Binomage + doc\nBesoins changeants     4      3      12    Methode Agile\n\nScore > 9 : plan de contingence obligatoire</pre></div>'},
+{id:17,opt:'Commun',cat:'Cybersecurite',title:'Cybersecurite commune',desc:'Menaces courantes, bonnes pratiques MDP/MFA, RGPD et regle 3-2-1.',diff:1,time:'15 min',content:'<h4>Attaques courantes</h4><ul><li><strong>Phishing</strong> : faux email. Reconnaitre : expediteur suspect, urgence, lien douteux (survoler avant cliquer).</li><li><strong>Injection SQL</strong> : injecter du code SQL. Prevention : requetes preparees PDO.</li><li><strong>XSS</strong> : injecter du JavaScript. Prevention : htmlspecialchars() en PHP, CSP headers.</li><li><strong>CSRF</strong> : action forcee a l insu de l utilisateur. Prevention : token CSRF dans les formulaires.</li><li><strong>Ransomware</strong> : chiffre les donnees. Prevention : sauvegardes hors ligne.</li></ul><h4>Regle de sauvegarde 3-2-1</h4><div class="example-box" style="border-color:var(--com)"><p style="font-size:0.83rem;color:var(--mu)"><strong style="color:var(--tx)">3-2-1 :</strong><br>3 copies des donnees (original + 2 backups)<br>2 supports differents (disque dur + cloud)<br>1 copie hors site (protection incendie, vol)<br><br>Tester la restauration regulierement !</p></div><h4>Mots de passe et MFA</h4><div class="codeblock"><pre>Mauvais : "password123", "prenom2000", "azerty"\nBon : long (16+ car), aleatoire, unique par site\n\nSolution : gestionnaire de mots de passe\n  Bitwarden (gratuit, open source)\n  KeePass (local)\n\nMFA = Quelque chose que tu sais (MDP)\n    + Quelque chose que tu as (telephone, Yubikey)\n    + Quelque chose que tu es (empreinte, Face ID)</pre></div>'},
+{id:18,opt:'Commun',cat:'Reseaux',title:'Adressage IP et Sous-reseaux',desc:'Calcul CIDR, adresses privees/publiques, NAT et introduction IPv6.',diff:2,time:'20 min',content:'<h4>Plages d adresses privees (RFC 1918)</h4><div class="codeblock"><pre>Classe A : 10.0.0.0 à 10.255.255.255 (/8)\nClasse B : 172.16.0.0 à 172.31.255.255 (/12)\nClasse C : 192.168.0.0 à 192.168.255.255 (/16)\n\nCes adresses ne sont pas routables sur Internet.\nNAT traduit les IPs privees en adresse publique.\n\nAdresses speciales :\n127.0.0.1   = localhost (loopback)\n0.0.0.0/0   = route par defaut</pre></div><h4>Calcul de sous-reseaux</h4><div class="codeblock"><pre>Reseau : 192.168.10.0/26\n\n/26 = masque 255.255.255.192 = 64 adresses\nHotes utilisables = 64 - 2 = 62\n\nSous-reseaux /26 dans un /24 :\nSR1 : 192.168.10.0   → .63   (hotes .1 à .62)\nSR2 : 192.168.10.64  → .127  (hotes .65 à .126)\nSR3 : 192.168.10.128 → .191\nSR4 : 192.168.10.192 → .255\n\nTableau :\n/24=254  /25=126  /26=62  /27=30  /28=14  /29=6  /30=2</pre></div>'},
+];
+
+var initQ=[
+{q:'Quelle couche OSI gere le routage des paquets entre reseaux ?',ch:['Couche 2 - Liaison','Couche 3 - Reseau','Couche 4 - Transport','Couche 7 - Application'],cor:1,opt:'SISR',sub:'Reseaux',expl:'La couche 3 (Reseau) gere le routage via le protocole IP. Elle determine le meilleur chemin pour acheminer les paquets d un reseau a un autre grace aux routeurs.'},
+{q:'TCP utilise quel mecanisme pour garantir la livraison des donnees ?',ch:['Le protocole ARP','Le TTL des paquets','L accuse de reception (ACK) et le handshake 3-way','L adresse MAC de destination'],cor:2,opt:'SISR',sub:'Reseaux',expl:'TCP etablit une connexion via SYN-SYN/ACK-ACK. Chaque segment doit etre acquitte (ACK). Sans ACK dans le delai, le segment est retransmis automatiquement.'},
+{q:'Combien d hotes utilisables dans un reseau /26 ?',ch:['64','62','30','126'],cor:1,opt:'SISR',sub:'Reseaux',expl:'/26 = 64 adresses totales. On soustrait l adresse reseau et le broadcast → 62 hotes. Formule : 2^(32-prefixe) - 2.'},
+{q:'Qu est-ce qu un port trunk en VLAN ?',ch:['Un port d admin securise','Un port du VLAN de management','Un port qui transporte plusieurs VLANs (802.1Q)','Un port bloque par securite'],cor:2,opt:'SISR',sub:'Reseaux',expl:'Un port trunk (802.1Q) transporte plusieurs VLANs sur un seul cable. Il ajoute un tag de 4 octets dans la trame Ethernet pour identifier le VLAN.'},
+{q:'Quelle commande systemd demarre un service au boot ?',ch:['systemctl start nginx','systemctl restart nginx','systemctl enable nginx','systemctl boot nginx'],cor:2,opt:'SISR',sub:'Systeme',expl:'systemctl enable cree un lien symbolique pour demarrer le service a chaque boot. start ne demarre que pour la session courante.'},
+{q:'chmod 644 applique quelles permissions ?',ch:['rwxr--r--','rw-r--r--','rwxrwxr--','r--r--r--'],cor:1,opt:'SISR',sub:'Systeme',expl:'6=rw- (proprietaire), 4=r-- (groupe), 4=r-- (autres). Typique pour les fichiers de configuration.'},
+{q:'Difference principale entre IDS et IPS ?',ch:['L IDS est plus recent','L IDS detecte sans bloquer ; l IPS detecte ET bloque','L IPS analyse le reseau, l IDS protege les hotes','L IDS est logiciel, l IPS est materiel'],cor:1,opt:'SISR',sub:'Cybersecurite',expl:'IDS (passif) : analyse et genere des alertes. IPS (actif) : positionne dans le flux reseau pour bloquer les menaces en temps reel.'},
+{q:'En TLS, pourquoi combiner asymetrique et symetrique ?',ch:['Pour des raisons legales','Asymetrique pour echange de cle (securise), symetrique pour donnees (rapide)','Symetrique pour echange, asymetrique pour donnees','Pour fonctionner sans certificat'],cor:1,opt:'SISR',sub:'Cybersecurite',expl:'L asymetrique resout l echange de cle securise mais est lent. AES (symetrique) chiffre les donnees tres rapidement une fois la cle de session echangee.'},
+{q:'Que retourne toujours une fonction async en JavaScript ?',ch:['La valeur directement','Une Promise','Un generateur','undefined'],cor:1,opt:'SLAM',sub:'JavaScript',expl:'Toute fonction async retourne une Promise. async function f() { return 42; } retourne Promise.resolve(42).'},
+{q:'Quelle methode PDO protege contre les injections SQL ?',ch:['query() avec echappement','escape()','prepare() avec execute([$param])','sanitize()'],cor:2,opt:'SLAM',sub:'PHP',expl:'Les requetes preparees separent le code SQL des donnees. PDO gere l echappement automatiquement, rendant les injections impossibles.'},
+{q:'Que fait super().__init__() en Python POO ?',ch:['Appelle le destructeur parent','Appelle le constructeur parent pour initialiser ses attributs','Cree une instance du parent','Remplace le constructeur parent'],cor:1,opt:'SLAM',sub:'POO',expl:'super().__init__() appelle le constructeur de la classe parente. Essentiel en heritage pour initialiser les attributs definis dans la classe mere.'},
+{q:'Difference entre PUT et PATCH en REST ?',ch:['Aucune difference','PUT cree, PATCH modifie','PUT remplace la ressource entiere, PATCH modifie partiellement','PATCH est plus securise'],cor:2,opt:'SLAM',sub:'API REST',expl:'PUT remplace la ressource complete (tous les champs). PATCH applique une modification partielle (seulement les champs envoyes). PATCH est plus economique.'},
+{q:'Difference entre WHERE et HAVING en SQL ?',ch:['Ce sont des synonymes','WHERE filtre avant GROUP BY ; HAVING filtre les groupes apres agregation','HAVING filtre les colonnes, WHERE filtre les lignes','WHERE avec JOIN, HAVING sans JOIN'],cor:1,opt:'Commun',sub:'SQL',expl:'WHERE filtre les lignes AVANT le GROUP BY (pas de fonctions d agregation). HAVING filtre les groupes APRES agregation (COUNT, SUM etc.).'},
+{q:'Une relation (0,n)-(0,n) en Merise devient quoi dans le MLD ?',ch:['Une cle etrangere dans l une des tables','Une table intermediaire avec 2 cles etrangeres','Un attribut calcule','Elle disparait'],cor:1,opt:'Commun',sub:'BDD',expl:'Une relation n,m ne peut pas se representer avec des FK directes. On cree une table intermediaire (table de jonction) avec les cles primaires des deux entites.'},
+{q:'Dans Scrum, qui priorise le Product Backlog ?',ch:['Le Scrum Master','L equipe de dev','Le Product Owner','Le manager'],cor:2,opt:'Commun',sub:'Gestion de projet',expl:'Le Product Owner represente les parties prenantes. Il maximise la valeur du produit en priorisant les User Stories selon leur valeur metier.'},
+{q:'La regle 3-2-1 des sauvegardes signifie ?',ch:['3 serveurs, 2 sites, 1 cloud','3 copies, 2 supports differents, 1 hors site','3 sauvegardes/jour, 2/semaine, 1/mois','3 formats, 2 outils, 1 responsable'],cor:1,opt:'Commun',sub:'Cybersecurite',expl:'3-2-1 : 3 copies (original + 2 backups), sur 2 types de supports differents, dont 1 copie hors site pour se proteger des incendies et catastrophes.'},
+];
+
+var opt='SISR',ficheFilter='all',qFilter='all';
+var answered={},scores={},allQ=initQ.slice();
+
+function setOpt(o){
+  opt=o;
+  ['osws','oswa','oswsl'].forEach(function(id){document.getElementById(id).className='osw';});
+  if(o==='SISR')document.getElementById('osws').classList.add('s');
+  else if(o==='SLAM')document.getElementById('oswsl').classList.add('sl');
+  else document.getElementById('oswa').classList.add('a');
+  var titles={SISR:"Solutions d'Infrastructure<br><span style='color:var(--sisr)'>Systemes et Reseaux</span>",SLAM:"Solutions Logicielles<br><span style='color:var(--slam)'>et Applications Metiers</span>",ALL:"Toutes les matieres<br><span style='color:var(--com)'>SISR + SLAM + Commun</span>"};
+  document.getElementById('htitle').innerHTML=titles[o];
+  var pool=o==='ALL'?fiches:fiches.filter(function(f){return f.opt===o||f.opt==='Commun';});
+  document.getElementById('sf').textContent=pool.filter(function(f){return f.opt!=='Commun';}).length;
+  ficheFilter='all';buildTabs();renderCards();
+}
+
+function buildTabs(){
+  var pool=opt==='ALL'?fiches:fiches.filter(function(f){return f.opt===opt||f.opt==='Commun';});
+  var cats=[...new Set(pool.map(function(f){return f.cat;}))];
+  var ac=opt==='SLAM'?'asl':opt==='Commun'?'ac':'as';
+  document.getElementById('ftabs').innerHTML='<button class="tb '+ac+'" onclick="filterF(\'all\',this)">Tout</button>'+cats.map(function(c){return '<button class="tb" onclick="filterF(\''+c+'\',this)">'+c+'</button>';}).join('');
+}
+
+function filterF(cat,el){
+  ficheFilter=cat;
+  document.querySelectorAll('#ftabs .tb').forEach(function(b){b.className='tb';});
+  var ac=opt==='SLAM'?'asl':opt==='Commun'?'ac':'as';
+  el.classList.add(ac);renderCards();
+}
+
+function renderCards(){
+  var pool=opt==='ALL'?fiches:fiches.filter(function(f){return f.opt===opt||f.opt==='Commun';});
+  if(ficheFilter!=='all')pool=pool.filter(function(f){return f.cat===ficheFilter;});
+  var gc={SISR:'s',SLAM:'sl',Commun:'c'};
+  var col={SISR:'var(--sisr)',SLAM:'var(--slam)',Commun:'var(--com)'};
+  document.getElementById('cgrid').innerHTML=pool.map(function(f){
+    var c=gc[f.opt],d=f.opt==='SISR'?'ds':f.opt==='SLAM'?'dsl':'dc';
+    return '<div class="card" style="--cc:'+col[f.opt]+'" onclick="openFiche('+f.id+')"><div class="cbadge '+c+'">'+(f.opt==='Commun'?'Commun':f.opt)+' - '+f.cat+'</div><h3>'+f.title+'</h3><p>'+f.desc+'</p><div class="cfoot"><div><div class="cmeta">'+f.time+'</div><div class="dots">'+[1,2,3].map(function(i){return '<div class="dot'+(i<=f.diff?' '+d:'')+'"></div>';}).join('')+'</div></div><button class="cbtn '+c+'" onclick="event.stopPropagation();openFiche('+f.id+')">Voir</button></div></div>';
+  }).join('');
+}
+
+function openFiche(id){
+  var f=fiches.find(function(x){return x.id===id;});
+  var gc={SISR:'s',SLAM:'sl',Commun:'c'};
+  var col={SISR:'var(--sisr)',SLAM:'var(--slam)',Commun:'var(--com)'};
+  var dim={SISR:'var(--sisr-d)',SLAM:'var(--slam-d)',Commun:'var(--com-d)'};
+  var c=gc[f.opt];
+  document.getElementById('mbody').innerHTML='<span class="mbadge '+c+'" style="background:'+dim[f.opt]+';color:'+col[f.opt]+'">'+f.opt+' - '+f.cat+' - '+f.time+'</span><h2>'+f.title+'</h2>'+f.content+'<div class="tipbox" style="background:'+dim[f.opt]+';border-color:'+col[f.opt]+'40;margin-top:1.5rem"><p style="font-size:0.82rem;color:var(--mu)"><strong style="color:'+col[f.opt]+'">Astuce BTS SIO :</strong> A l oral, illustre toujours avec un exemple concret. Les examinateurs valorisent les etudiants qui savent appliquer, pas juste reciter.</p></div>';
+  document.getElementById('moverlay').classList.add('on');
+  document.getElementById('moverlay').scrollTop=0;
+}
+
+function closeMW(e){if(e.target===document.getElementById('moverlay'))closeMB();}
+function closeMB(){document.getElementById('moverlay').classList.remove('on');}
+
+function setQF(f,el){
+  qFilter=f;
+  document.querySelectorAll('.qf').forEach(function(b){b.classList.remove('on');});
+  el.classList.add('on');renderQCM();
+}
+
+function getPool(){return qFilter==='all'?allQ:allQ.filter(function(q){return q.opt===qFilter;});}
+
+function renderQCM(){
+  var pool=getPool();
+  var done=pool.filter(function(q){return answered[allQ.indexOf(q)]!==undefined;}).length;
+  document.getElementById('aiSection').style.display=(done>=pool.length&&pool.length>0)?'block':'none';
+  var gc={SISR:'S',SLAM:'SL',Commun:'C'};
+  document.getElementById('qcon').innerHTML=pool.map(function(q,i){
+    var oi=allQ.indexOf(q);
+    var isDone=answered[oi]!==undefined;
+    var chosen=isDone?answered[oi]:null;
+    return '<div class="qcard"><div class="qhead"><span class="qnum">Q'+(i+1)+' - '+q.sub+'</span><span class="qopt '+(gc[q.opt]||'C')+'">'+q.opt+'</span></div><div class="qq">'+q.q+'</div><div class="choices">'+q.ch.map(function(c,j){
+      var cls='choice';
+      if(isDone){cls+=' locked';if(j===q.cor)cls+=' ok';else if(j===chosen&&j!==q.cor)cls+=' ko';}
+      return '<div class="'+cls+'" onclick="answer('+oi+','+j+')"><div class="cletter">'+['A','B','C','D'][j]+'</div>'+c+'</div>';
+    }).join('')+'</div>'+(isDone?'<div class="explain" style="color:'+(chosen===q.cor?'var(--ok)':'var(--ko)')+'"><strong>'+(chosen===q.cor?'Bonne reponse !':'Mauvaise reponse.')+'</strong> '+q.expl+'</div>':'')+'</div>';
+  }).join('');
+  updateScore();
+}
+
+function answer(oi,choice){
+  if(answered[oi]!==undefined)return;
+  answered[oi]=choice;
+  var q=allQ[oi];
+  var ok=choice===q.cor;
+  if(!scores[q.opt])scores[q.opt]={r:0,t:0};
+  scores[q.opt].t++;
+  if(ok)scores[q.opt].r++;
+  renderQCM();
+  toast(ok?'Bonne reponse !':'Mauvaise reponse',ok?'ok':'ko');
+}
+
+function updateScore(){
+  var pool=getPool();
+  var t=pool.filter(function(q){return answered[allQ.indexOf(q)]!==undefined;}).length;
+  var r=pool.filter(function(q){return answered[allQ.indexOf(q)]===q.cor;}).length;
+  document.getElementById('stxt').textContent=r+' / '+t;
+  document.getElementById('sfill').style.width=(t?Math.round(r/t*100):0)+'%';
+}
+
+function resetQ(){answered={};scores={};renderQCM();toast('QCM reinitialise','ok');}
+
+async function generateAIQuestions(){
+  var btn=document.getElementById('aibtn');
+  var loader=document.getElementById('aiload');
+  btn.disabled=true;btn.style.display='none';loader.style.display='flex';
+  var label=qFilter==='all'?'BTS SIO toutes options':qFilter==='SISR'?'BTS SIO SISR (reseaux, systemes, cybersecurite, virtualisation)':qFilter==='SLAM'?'BTS SIO SLAM (developpement web, PHP, POO, API REST, mobile)':'BTS SIO matieres communes (SQL, BDD Merise, gestion de projet, methodes agiles)';
+  var existing=allQ.slice(0,10).map(function(q){return q.q.substring(0,40);}).join(' | ');
+  var prompt='Tu es un professeur de BTS SIO. Genere exactement 6 nouvelles questions QCM pour '+label+'.\n\nNe repete PAS ces sujets deja poses : '+existing+'\n\nReponds UNIQUEMENT avec un JSON valide sans markdown :\n[\n  {\n    "q": "Question ?",\n    "ch": ["Choix A", "Choix B", "Choix C", "Choix D"],\n    "cor": 2,\n    "opt": "'+(qFilter==='all'?'Commun':qFilter)+'",\n    "sub": "Sujet (ex: Reseaux, SQL, JavaScript...)",\n    "expl": "Explication de la bonne reponse en 2-3 phrases."\n  }\n]';
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})});
+    var data=await res.json();
+    var text=data.content.map(function(b){return b.text||'';}).join('');
+    var clean=text.replace(/```json|```/g,'').trim();
+    var newQs=JSON.parse(clean);
+    if(Array.isArray(newQs)&&newQs.length>0){
+      allQ=allQ.concat(newQs);
+      toast(newQs.length+' nouvelles questions generees !','ok');
+      renderQCM();
+    }else throw new Error('Format invalide');
+  }catch(e){toast('Erreur lors de la generation.','ko');console.error(e);}
+  finally{btn.disabled=false;btn.style.display='inline-flex';loader.style.display='none';}
+}
+
+function updateProg(){
+  var secs=[{l:'Option SISR',o:['SISR'],c:'var(--sisr)'},{l:'Option SLAM',o:['SLAM'],c:'var(--slam)'},{l:'Matieres communes',o:['Commun'],c:'var(--com)'}];
+  var html='';
+  secs.forEach(function(sec){
+    var qs=allQ.filter(function(q){return sec.o.indexOf(q.opt)>=0;});
+    var subs=[...new Set(qs.map(function(q){return q.sub;}))];
+    html+='<div class="psect">'+sec.l+'</div><div class="pg">';
+    subs.forEach(function(sub){
+      var sq=allQ.filter(function(q){return q.sub===sub&&sec.o.indexOf(q.opt)>=0;});
+      var t=0,r=0;
+      sq.forEach(function(q){var i=allQ.indexOf(q);if(answered[i]!==undefined){t++;if(answered[i]===q.cor)r++;}});
+      var pct=t>0?Math.round(r/t*100):0;
+      html+='<div class="pc"><div class="ph"><span class="pt">'+sub+'</span><span class="pp" style="color:'+sec.c+'">'+(t>0?pct+'%':'—')+'</span></div><div class="pb"><div class="pf" style="width:'+pct+'%;background:'+sec.c+'"></div></div><div class="psub">'+t+' / '+sq.length+' question'+(sq.length>1?'s':'')+'</div></div>';
+    });
+    html+='</div>';
+  });
+  document.getElementById('pcon').innerHTML=html||'<p style="color:var(--mu);margin-top:1rem">Reponds aux QCM pour voir ta progression.</p>';
+}
+
+function goSec(name,el){
+  document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('on');});
+  document.getElementById(name).classList.add('on');
+  document.querySelectorAll('.np').forEach(function(p){p.classList.remove('on');});
+  el.classList.add('on');
+  if(name==='prog')updateProg();
+}
+
+function toast(msg,type){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast '+type;t.classList.add('on');
+  setTimeout(function(){t.classList.remove('on');},2400);
+}
+
+setOpt('SISR');
+renderQCM();
+</script>
+</body>
+</html>
