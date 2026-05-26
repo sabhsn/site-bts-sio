@@ -11,7 +11,9 @@
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden}
 h1,h2,h3,h4,h5{font-family:'Syne',sans-serif}
 code,pre{font-family:'JetBrains Mono',monospace}
-nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid var(--br);position:sticky;top:0;z-index:100;background:rgba(9,9,15,0.95);backdrop-filter:blur(16px)}
+.wrap{max-width:1280px;margin:0 auto;padding:0 2rem}
+nav{border-bottom:1px solid var(--br);position:sticky;top:0;z-index:100;background:rgba(9,9,15,0.95);backdrop-filter:blur(16px)}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;max-width:1280px;margin:0 auto}
 .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;display:flex;align-items:center;gap:0.4rem}
 .ls{color:var(--sisr)}.lsl{color:var(--slam)}.lm{color:var(--mu);font-weight:300}
 .npills{display:flex;gap:0.4rem}
@@ -21,6 +23,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 2
 .osw{padding:0.45rem 1.5rem;border-radius:100px;font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;transition:all 0.25s;border:none;color:var(--mu);background:none}
 .osw.s{background:var(--sisr);color:#fff}.osw.sl{background:var(--slam);color:#fff}.osw.a{background:var(--s3);color:var(--tx)}
 .hero{padding:3rem 2rem 2rem;text-align:center;position:relative;overflow:hidden}
+.hero-inner{max-width:1280px;margin:0 auto}
 .hero::before{content:'';position:absolute;top:-60px;left:25%;width:300px;height:300px;background:radial-gradient(ellipse,rgba(79,142,247,0.07),transparent 70%);pointer-events:none}
 .hero::after{content:'';position:absolute;top:-60px;right:25%;width:300px;height:300px;background:radial-gradient(ellipse,rgba(176,110,247,0.07),transparent 70%);pointer-events:none}
 .hero h1{font-size:clamp(1.8rem,4vw,3rem);font-weight:800;line-height:1.1;letter-spacing:-0.04em;margin-bottom:0.7rem}
@@ -28,8 +31,9 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 2
 .stats{display:flex;gap:3rem;justify-content:center;flex-wrap:wrap}
 .stat strong{display:block;font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:700}
 .stat span{font-size:0.72rem;color:var(--mu);letter-spacing:0.07em;text-transform:uppercase}
-.sec{display:none;padding:0 2rem 4rem;animation:fi 0.25s ease}
+.sec{display:none;padding:0 0 4rem;animation:fi 0.25s ease}
 .sec.on{display:block}
+.sec-inner{max-width:1280px;margin:0 auto;padding:0 2rem}
 @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .tabrow{display:flex;gap:0.4rem;margin-bottom:1.2rem;flex-wrap:wrap}
 .tb{background:var(--s1);border:1px solid var(--br);color:var(--mu);padding:0.35rem 0.9rem;border-radius:100px;font-size:0.78rem;cursor:pointer;white-space:nowrap;transition:all 0.2s;font-family:'DM Sans',sans-serif}
@@ -113,55 +117,65 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 2
 </head>
 <body>
 <nav>
-  <div class="logo"><span class="ls">SISR</span><span class="lm" style="margin:0 2px">/</span><span class="lsl">SLAM</span><span class="lm" style="font-size:0.85rem;margin-left:4px">.rev</span></div>
-  <div class="npills">
-    <button class="np on" onclick="goSec('fiches',this)">Fiches</button>
-    <button class="np" onclick="goSec('qcm',this)">QCM IA</button>
-    <button class="np" onclick="goSec('prog',this)">Progres</button>
+  <div class="nav-inner">
+    <div class="logo"><span class="ls">SISR</span><span class="lm" style="margin:0 2px">/</span><span class="lsl">SLAM</span><span class="lm" style="font-size:0.85rem;margin-left:4px">.rev</span></div>
+    <div class="npills">
+      <button class="np on" onclick="goSec('fiches',this)">Fiches</button>
+      <button class="np" onclick="goSec('qcm',this)">QCM IA</button>
+      <button class="np" onclick="goSec('prog',this)">Progres</button>
+    </div>
   </div>
 </nav>
 <div class="hero">
-  <div class="osw-wrap">
-    <button class="osw s" id="osws" onclick="setOpt('SISR')">SISR</button>
-    <button class="osw" id="oswa" onclick="setOpt('ALL')" style="font-size:0.78rem">Tout</button>
-    <button class="osw" id="oswsl" onclick="setOpt('SLAM')">SLAM</button>
-  </div>
-  <h1 id="htitle">Solutions d'Infrastructure<br><span style="color:var(--sisr)">Systemes et Reseaux</span></h1>
-  <p id="hdesc">Fiches detaillees avec exemples concrets, QCM generes par IA illimites, suivi de progression.</p>
-  <div class="stats">
-    <div class="stat"><strong id="sf">8</strong><span>Fiches</span></div>
-    <div class="stat"><strong>infini</strong><span>Questions IA</span></div>
-    <div class="stat"><strong id="sc">6</strong><span>Communes</span></div>
+  <div class="hero-inner">
+    <div class="osw-wrap">
+      <button class="osw s" id="osws" onclick="setOpt('SISR')">SISR</button>
+      <button class="osw" id="oswa" onclick="setOpt('ALL')" style="font-size:0.78rem">Tout</button>
+      <button class="osw" id="oswsl" onclick="setOpt('SLAM')">SLAM</button>
+    </div>
+    <h1 id="htitle">Solutions d'Infrastructure<br><span style="color:var(--sisr)">Systemes et Reseaux</span></h1>
+    <p id="hdesc">Fiches detaillees avec exemples concrets, QCM generes par IA illimites, suivi de progression.</p>
+    <div class="stats">
+      <div class="stat"><strong id="sf">8</strong><span>Fiches</span></div>
+      <div class="stat"><strong>∞</strong><span>Questions IA</span></div>
+      <div class="stat"><strong id="sc">6</strong><span>Communes</span></div>
+    </div>
   </div>
 </div>
 <div class="sec on" id="fiches">
-  <div class="tabrow" id="ftabs"></div>
-  <div class="cards" id="cgrid"></div>
+  <div class="sec-inner">
+    <div class="tabrow" id="ftabs"></div>
+    <div class="cards" id="cgrid"></div>
+  </div>
 </div>
 <div class="sec" id="qcm">
-  <div class="qcm-top">
-    <div><h2 style="font-size:1.15rem;font-weight:700;margin-bottom:0.1rem">QCM interactif</h2><p style="font-size:0.8rem;color:var(--mu)">Score : <span id="stxt">0 / 0</span></p></div>
-    <button onclick="resetQ()" style="background:var(--s2);border:1px solid var(--br);color:var(--mu);padding:0.4rem 1rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.78rem;cursor:pointer">Reinitialiser</button>
-  </div>
-  <div class="sbar"><div class="sfill" id="sfill" style="width:0%"></div></div>
-  <div class="qfilts">
-    <button class="qf oa on" onclick="setQF('all',this)">Tout</button>
-    <button class="qf os" onclick="setQF('SISR',this)">SISR</button>
-    <button class="qf osl" onclick="setQF('SLAM',this)">SLAM</button>
-    <button class="qf oc" onclick="setQF('Commun',this)">Commun</button>
-  </div>
-  <div id="qcon"></div>
-  <div class="ai-section" id="aiSection" style="display:none">
-    <h3>Serie terminee !</h3>
-    <p>Tu as repondu a toutes les questions. L'IA va en generer de nouvelles, differentes et adaptees a ton option.</p>
-    <button class="aibtn" id="aibtn" onclick="generateAIQuestions()">Generer de nouvelles questions</button>
-    <div class="ai-loading" id="aiload"><div class="spinner"></div>L'IA genere tes questions...</div>
+  <div class="sec-inner">
+    <div class="qcm-top">
+      <div><h2 style="font-size:1.15rem;font-weight:700;margin-bottom:0.1rem">QCM interactif</h2><p style="font-size:0.8rem;color:var(--mu)">Score : <span id="stxt">0 / 0</span></p></div>
+      <button onclick="resetQ()" style="background:var(--s2);border:1px solid var(--br);color:var(--mu);padding:0.4rem 1rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.78rem;cursor:pointer">Reinitialiser</button>
+    </div>
+    <div class="sbar"><div class="sfill" id="sfill" style="width:0%"></div></div>
+    <div class="qfilts">
+      <button class="qf oa on" onclick="setQF('all',this)">Tout</button>
+      <button class="qf os" onclick="setQF('SISR',this)">SISR</button>
+      <button class="qf osl" onclick="setQF('SLAM',this)">SLAM</button>
+      <button class="qf oc" onclick="setQF('Commun',this)">Commun</button>
+    </div>
+    <div id="qcon"></div>
+    <div class="ai-section" id="aiSection" style="display:none">
+      <h3>Serie terminee !</h3>
+      <p>Tu as repondu a toutes les questions. L'IA va en generer de nouvelles, differentes et adaptees a ton option.</p>
+      <button class="aibtn" id="aibtn" onclick="generateAIQuestions()">Generer de nouvelles questions</button>
+      <div class="ai-loading" id="aiload"><div class="spinner"></div>L'IA genere tes questions...</div>
+    </div>
   </div>
 </div>
 <div class="sec" id="prog">
-  <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:0.25rem">Ma progression</h2>
-  <p style="font-size:0.8rem;color:var(--mu);margin-bottom:1.3rem">Base sur tes reponses aux QCM</p>
-  <div id="pcon"></div>
+  <div class="sec-inner">
+    <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:0.25rem">Ma progression</h2>
+    <p style="font-size:0.8rem;color:var(--mu);margin-bottom:1.3rem">Base sur tes reponses aux QCM</p>
+    <div id="pcon"></div>
+  </div>
 </div>
 <div class="moverlay" id="moverlay" onclick="closeMW(event)">
   <div class="modal"><button class="mclose" onclick="closeMB()">x</button><div id="mbody"></div></div>
@@ -320,7 +334,9 @@ async function generateAIQuestions(){
   var existing=allQ.slice(0,10).map(function(q){return q.q.substring(0,40);}).join(' | ');
   var prompt='Tu es un professeur de BTS SIO. Genere exactement 6 nouvelles questions QCM pour '+label+'.\n\nNe repete PAS ces sujets deja poses : '+existing+'\n\nReponds UNIQUEMENT avec un JSON valide sans markdown :\n[\n  {\n    "q": "Question ?",\n    "ch": ["Choix A", "Choix B", "Choix C", "Choix D"],\n    "cor": 2,\n    "opt": "'+(qFilter==='all'?'Commun':qFilter)+'",\n    "sub": "Sujet (ex: Reseaux, SQL, JavaScript...)",\n    "expl": "Explication de la bonne reponse en 2-3 phrases."\n  }\n]';
   try{
-    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt}]})});
+    var proxyUrl='https://corsproxy.io/?url='+encodeURIComponent('https://api.anthropic.com/v1/messages');
+    var res=await fetch(proxyUrl,{method:'POST',headers:{'Content-Type':'application/json','x-api-key':'','anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1500,messages:[{role:'user',content:prompt}]})});
+    if(!res.ok) throw new Error('HTTP '+res.status);
     var data=await res.json();
     var text=data.content.map(function(b){return b.text||'';}).join('');
     var clean=text.replace(/```json|```/g,'').trim();
@@ -330,7 +346,10 @@ async function generateAIQuestions(){
       toast(newQs.length+' nouvelles questions generees !','ok');
       renderQCM();
     }else throw new Error('Format invalide');
-  }catch(e){toast('Erreur lors de la generation.','ko');console.error(e);}
+  }catch(e){
+    toast('Generation IA indisponible depuis GitHub Pages.','ko');
+    console.error(e);
+  }
   finally{btn.disabled=false;btn.style.display='inline-flex';loader.style.display='none';}
 }
 
